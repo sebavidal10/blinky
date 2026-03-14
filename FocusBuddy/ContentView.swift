@@ -1,6 +1,5 @@
 //
 //  ContentView.swift
-//  FocusBuddy
 //
 //  Created by Sebastián Vidal Aedo on 13-03-26.
 //
