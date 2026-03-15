@@ -78,6 +78,9 @@ struct BuddyView: View {
                 }
             }
             .padding(10)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Blinky, tu compañero de enfoque")
+            .accessibilityValue(timer.phase == .idle ? "Inactivo" : "\(timer.phase == .working ? "Enfocado" : "Descansando"), \(timer.timeString) restantes")
             
             Spacer()
         }
@@ -117,14 +120,17 @@ struct BuddyView: View {
     }
 
     func startBlinking() {
-        Timer.scheduledTimer(withTimeInterval: 4, repeats: true) { _ in
-            withAnimation(.easeInOut(duration: 0.1)) {
+        // More natural random blinking
+        let interval = Double.random(in: 3...7)
+        DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
+            withAnimation(.easeInOut(duration: 0.08)) {
                 blinkScale = 0.1
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.easeInOut(duration: 0.1)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+                withAnimation(.easeInOut(duration: 0.08)) {
                     blinkScale = 1.0
                 }
+                startBlinking()
             }
         }
     }

@@ -34,6 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         setupVisibilityObservation()
         setupTimerObserver()
+        setupWakeObservation()
     }
 
     // MARK: - Menu Bar
@@ -109,27 +110,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupTimerObserver() {
-        timerCancellable = PomodoroTimer.shared.$secondsRemaining
+        PomodoroTimer.shared.$secondsRemaining
             .combineLatest(PomodoroTimer.shared.$isRunning, PomodoroTimer.shared.$phase)
             .receive(on: RunLoop.main)
             .sink { [weak self] _, isRunning, phase in
                 self?.updateStatusItemTitle(isRunning: isRunning, phase: phase)
             }
+            .store(in: &cancellables)
     }
 
     private func updateStatusItemTitle(isRunning: Bool, phase: TimerPhase) {
-        // Show timer if running OR if we are in a session (not idle)
+        let button = statusItem?.button
         if phase != .idle {
             let title = PomodoroTimer.shared.timeString
-            let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: font,
-                .baselineOffset: -0.5 // Subtle adjustment to align with icon
-            ]
-            let attrTitle = NSAttributedString(string: title, attributes: attrs)
-            statusItem?.button?.attributedTitle = attrTitle
+            
+            // Only update if text actually changed to save CPU
+            if button?.title != title {
+                let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
+                let attrs: [NSAttributedString.Key: Any] = [
+                    .font: font,
+                    .baselineOffset: -0.5
+                ]
+                button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
+            }
         } else {
-            statusItem?.button?.title = ""
+            button?.attributedTitle = NSAttributedString(string: "")
+            button?.title = ""
         }
     }
 
@@ -169,5 +175,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func showStats() {
         togglePopover()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        // Ensure DND is turned off if the app is closed during a session
+        if BuddySettings.shared.enableDNDSync {
+            DNDManager.shared.setDND(enabled: false)
+        }
+    }
+
+    private func setupWakeObservation() {
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleWake),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleWake() {
+        PomodoroTimer.shared.checkDayReset()
     }
 }

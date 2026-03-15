@@ -71,6 +71,28 @@ struct SettingsView: View {
                     .padding()
                     .background(.ultraThinMaterial)
                     .cornerRadius(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    // General Settings
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("General")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.secondary)
+                        
+                        Toggle(isOn: $buddySettings.launchAtLogin) {
+                            Label("Abrir al iniciar sesión", systemImage: "power")
+                                .font(.system(size: 13))
+                        }
+
+                        Toggle(isOn: $buddySettings.enableDNDSync) {
+                            Label("No Molestar automático", systemImage: "moon.fill")
+                                .font(.system(size: 13))
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
 
                     // Cycles
                     VStack(alignment: .leading, spacing: 16) {
@@ -90,6 +112,7 @@ struct SettingsView: View {
                         }
                     }
                     .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .background(.ultraThinMaterial)
                     .cornerRadius(16)
 

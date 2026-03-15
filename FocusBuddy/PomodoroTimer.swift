@@ -81,8 +81,11 @@ class PomodoroTimer: ObservableObject {
     }
     @Published var sessionsHistory: [FocusSession] = [] {
         didSet {
-            if let encoded = try? JSONEncoder().encode(sessionsHistory) {
-                UserDefaults.standard.set(encoded, forKey: "sessionsHistory")
+            // Background saving to prevent blocking the UI thread
+            DispatchQueue.global(qos: .background).async {
+                if let encoded = try? JSONEncoder().encode(self.sessionsHistory) {
+                    UserDefaults.standard.set(encoded, forKey: "sessionsHistory")
+                }
             }
         }
     }
@@ -130,16 +133,21 @@ class PomodoroTimer: ObservableObject {
         if longBreakDuration < 60 { longBreakDuration = 60 }
     }
 
-    private func checkDayReset() {
+    func checkDayReset() {
         let ud = UserDefaults.standard
         let lastDate = ud.object(forKey: "lastActiveDate") as? Date ?? Date.distantPast
         let calendar = Calendar.current
+        
         if !calendar.isDateInToday(lastDate) {
+            // New day detected
             if totalSessionsToday > 0 {
+                // If we worked yesterday, increment streak
                 currentStreak += 1
-            } else if !calendar.isDateInYesterday(lastDate) {
+            } else if lastDate != Date.distantPast && !calendar.isDateInYesterday(lastDate) {
+                // If we missed more than one day, reset streak
                 currentStreak = 0
             }
+            
             totalSessionsToday = 0
             ud.set(Date(), forKey: "lastActiveDate")
         }
@@ -173,6 +181,12 @@ class PomodoroTimer: ObservableObject {
             secondsRemaining = workDuration
         }
         isRunning = true
+        
+        // Turn on DND if starting work
+        if phase == .working && BuddySettings.shared.enableDNDSync {
+            DNDManager.shared.setDND(enabled: true)
+        }
+        
         updateMood()
         startTicking()
         UserDefaults.standard.set(Date(), forKey: "lastActiveDate")
@@ -197,9 +211,29 @@ class PomodoroTimer: ObservableObject {
         advancePhase()
     }
 
+    func finishFullCycle() {
+        isRunning = false
+        timer?.cancel()
+        
+        // Turn off DND on manual reset
+        if BuddySettings.shared.enableDNDSync {
+            DNDManager.shared.setDND(enabled: false)
+        }
+        
+        phase = .idle
+        completedSessions = 0
+        currentGoal = ""
+        secondsRemaining = workDuration
+        updateMood()
+    }
+
     // MARK: - Internal
 
+    private var lastTickDate: Date?
+
     private func startTicking() {
+        timer?.cancel()
+        lastTickDate = Date()
         timer = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in self?.tick() }
@@ -207,10 +241,24 @@ class PomodoroTimer: ObservableObject {
 
     private func tick() {
         guard isRunning else { return }
+        
+        let now = Date()
+        let elapsed = Int(now.timeIntervalSince(lastTickDate ?? now))
+        lastTickDate = now
+        
+        // Handle potential background sleep by jumping seconds if needed
+        let decrement = max(1, elapsed)
+        
         if secondsRemaining > 0 {
-            secondsRemaining -= 1
-        } else {
-            advancePhase()
+            secondsRemaining = max(0, secondsRemaining - decrement)
+            if secondsRemaining == 0 {
+                advancePhase()
+            }
+        }
+        
+        // Periodically check for day reset (e.g., at midnight)
+        if secondsRemaining % 60 == 0 {
+            checkDayReset()
         }
     }
 
@@ -232,6 +280,11 @@ class PomodoroTimer: ObservableObject {
                 secondsRemaining = shortBreakDuration
             }
             
+            // Turn off DND when break starts
+            if BuddySettings.shared.enableDNDSync {
+                DNDManager.shared.setDND(enabled: false)
+            }
+            
             mood = .celebrating
             sendNotification(title: "¡Sesión completada! 🎉", body: "Iniciando descanso automático.")
             
@@ -246,6 +299,12 @@ class PomodoroTimer: ObservableObject {
         case .breakTime, .longBreak:
             phase = .working
             secondsRemaining = workDuration
+            
+            // Turn on DND when returning to work from break
+            if BuddySettings.shared.enableDNDSync {
+                DNDManager.shared.setDND(enabled: true)
+            }
+            
             isRunning = false // STOP: Wait for user to start next work session
             timer?.cancel()
             updateMood()

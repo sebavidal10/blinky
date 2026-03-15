@@ -6,6 +6,7 @@
 
 import Foundation
 import Combine
+import ServiceManagement
 
 class BuddySettings: ObservableObject {
     static let shared = BuddySettings()
@@ -22,6 +23,24 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(showAura, forKey: "showAura") }
     }
 
+    @Published var enableDNDSync: Bool = false {
+        didSet { UserDefaults.standard.set(enableDNDSync, forKey: "enableDNDSync") }
+    }
+
+    @Published var launchAtLogin: Bool = false {
+        didSet {
+            do {
+                if launchAtLogin {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                print("Failed to update login item: \(error)")
+            }
+        }
+    }
+
     private init() {
         let savedOpacity = UserDefaults.standard.double(forKey: "buddyOpacity")
         if savedOpacity > 0 { 
@@ -32,5 +51,9 @@ class BuddySettings: ObservableObject {
 
         isBuddyVisible = UserDefaults.standard.object(forKey: "isBuddyVisible") as? Bool ?? true
         showAura = UserDefaults.standard.object(forKey: "showAura") as? Bool ?? true
+        enableDNDSync = UserDefaults.standard.bool(forKey: "enableDNDSync")
+        
+        // Sync launchAtLogin with system status
+        launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 }

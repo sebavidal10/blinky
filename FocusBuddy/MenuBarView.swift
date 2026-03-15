@@ -10,6 +10,9 @@ struct MenuBarView: View {
     @EnvironmentObject var timer: PomodoroTimer
 
     @State private var isPreparingSession: Bool = false
+    @State private var showingQuitAlert: Bool = false
+    @State private var showingSkipAlert: Bool = false
+    @State private var showingFinishCycleAlert: Bool = false
     @State private var currentView: AppView = .timer
     @ObservedObject var buddySettings = BuddySettings.shared
 
@@ -55,7 +58,7 @@ struct MenuBarView: View {
 
                 Spacer()
 
-                Button(action: { NSApp.terminate(nil) }) {
+                Button(action: { showingQuitAlert = true }) {
                     Image(systemName: "power")
                         .font(.system(size: 13, weight: .bold))
                         .foregroundColor(.red.opacity(0.8))
@@ -65,6 +68,14 @@ struct MenuBarView: View {
                 }
                 .buttonStyle(.plain)
                 .help("Salir ⌘Q")
+                .confirmationDialog("¿Estás seguro que deseas salir?", isPresented: $showingQuitAlert, titleVisibility: .visible) {
+                    Button("Salir de FocusBuddy", role: .destructive) {
+                        NSApp.terminate(nil)
+                    }
+                    Button("Cancelar", role: .cancel) {}
+                } message: {
+                    Text("Se perderá el progreso de la sesión actual.")
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -208,38 +219,54 @@ struct MenuBarView: View {
 
             // Controls
             if timer.phase != .idle {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     Button(action: handleMainButton) {
                         Label(mainButtonLabel, systemImage: mainButtonIcon)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                     .tint(timer.isRunning ? .blue : .accentColor)
 
-                    Button(action: {
-                        timer.reset()
-                        isPreparingSession = false
-                    }) {
-                        Image(systemName: "arrow.counterclockwise")
-                    }
-                    .buttonStyle(.bordered)
-                    .help("Reiniciar todo")
-
-                    if timer.phase == .working {
-                        Button(action: timer.skip) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "checkmark.seal.fill")
-                                Text("Finalizar")
+                    HStack(spacing: 8) {
+                        Button(action: { showingFinishCycleAlert = true }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.bordered)
+                        .help("Terminar Ciclo")
+                        .confirmationDialog("¿Terminar ciclo completo?", isPresented: $showingFinishCycleAlert, titleVisibility: .visible) {
+                            Button("Sí, terminar todo", role: .destructive) {
+                                timer.finishFullCycle()
+                                isPreparingSession = false
                             }
+                            Button("Cancelar", role: .cancel) {}
+                        } message: {
+                            Text("Se borrará el progreso de hoy y volverás a la configuración inicial.")
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.green)
-                    } else {
-                        Button(action: timer.skip) {
-                            Image(systemName: "forward.end.fill")
+
+                        if timer.phase == .working {
+                            Button(action: { showingSkipAlert = true }) {
+                                Image(systemName: "checkmark.seal.fill")
+                                    .foregroundColor(.green)
+                            }
+                            .buttonStyle(.bordered)
+                            .help("Finalizar sesión")
+                            .confirmationDialog("¿Finalizar sesión de enfoque?", isPresented: $showingSkipAlert, titleVisibility: .visible) {
+                                Button("Sí, finalizar sesión", role: .destructive) {
+                                    timer.skip()
+                                }
+                                Button("Cancelar", role: .cancel) {}
+                            } message: {
+                                Text("Avanzarás al siguiente descanso.")
+                            }
+                        } else {
+                            Button(action: timer.skip) {
+                                Image(systemName: "forward.end.fill")
+                            }
+                            .buttonStyle(.bordered)
+                            .help("Omitir descanso")
                         }
-                        .buttonStyle(.bordered)
-                        .help("Omitir descanso")
                     }
                 }
                 .padding(.horizontal, 16)
