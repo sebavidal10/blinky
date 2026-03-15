@@ -11,32 +11,34 @@ struct OnboardingView: View {
     @Environment(\.dismiss) var dismiss
     @State private var currentPage = 0
     
-    let pages = [
-        OnboardingPage(
-            title: "FocusBuddy Pro",
-            description: "Tu compañero de productividad minimalista. Diseñado para vivir en tu escritorio sin distraer.",
-            image: "RobotBuddy",
-            isAsset: true
-        ),
-        OnboardingPage(
-            title: "Enfócate con Pomodoro",
-            description: "Trabaja en bloques de 25 minutos. El Buddy reacciona sutilmente a tu progreso.",
-            image: "brain.head.profile",
-            isAsset: false
-        ),
-        OnboardingPage(
-            title: "Control Total",
-            description: "Oculta el Buddy cuando necesites espacio o muévelo libremente usando el tirador superior.",
-            image: "eye.fill",
-            isAsset: false
-        ),
-        OnboardingPage(
-            title: "Privacidad Primero",
-            description: "Sin monitoreo de teclado ni mouse. FocusBuddy solo depende de tu temporizador.",
-            image: "lock.shield.fill",
-            isAsset: false
-        )
-    ]
+    var pages: [OnboardingPage] {
+        [
+            OnboardingPage(
+                title: Localization.obTitle1,
+                description: Localization.obDesc1,
+                image: "RobotBuddy",
+                isAsset: true
+            ),
+            OnboardingPage(
+                title: Localization.obTitle2,
+                description: Localization.obDesc2,
+                image: "brain.head.profile",
+                isAsset: false
+            ),
+            OnboardingPage(
+                title: Localization.obTitle3,
+                description: Localization.obDesc3,
+                image: "eye.fill",
+                isAsset: false
+            ),
+            OnboardingPage(
+                title: Localization.obTitle4,
+                description: Localization.obDesc4,
+                image: "lock.shield.fill",
+                isAsset: false
+            )
+        ]
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -87,12 +89,12 @@ struct OnboardingView: View {
                 Spacer()
                 
                 if currentPage < pages.count - 1 {
-                    Button("Siguiente") {
+                    Button(Localization.next) {
                         withAnimation { currentPage += 1 }
                     }
                     .buttonStyle(.bordered)
                 } else {
-                    Button("¡Empezar!") {
+                    Button(Localization.getStarted) {
                         UserDefaults.standard.set(true, forKey: "hasFinishedOnboarding")
                         dismiss()
                     }

@@ -79,8 +79,11 @@ struct BuddyView: View {
             }
             .padding(10)
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("Blinky, tu compañero de enfoque")
-            .accessibilityValue(timer.phase == .idle ? "Inactivo" : "\(timer.phase == .working ? "Enfocado" : "Descansando"), \(timer.timeString) restantes")
+            .accessibilityLabel(Localization.buddyAccessibilityLabel)
+            .accessibilityValue(Localization.buddyAccessibilityValue(
+                phase: timer.phase == .working ? Localization.phaseFocus : Localization.phaseShortBreak,
+                time: timer.timeString
+            ))
             
             Spacer()
         }
@@ -139,26 +142,26 @@ struct BuddyView: View {
         switch phase {
         case .breakTime, .longBreak:
             let recoveryProtocols = [
-                "Respira profundo 🌬️",
-                "Estira la espalda 🧘",
-                "Bebe agua 💧",
-                "Mira a lo lejos 👁️",
-                "Té o café? ☕️"
+                Localization.reminderDeepBreath,
+                Localization.reminderStretchBack,
+                Localization.reminderDrinkWater,
+                Localization.reminderLookAway,
+                Localization.reminderTeaCoffee
             ]
             smartReminder = recoveryProtocols.randomElement()
             
         case .working:
             let focusProtocols = [
-                "Hombros relajados 🧘",
-                "Mantén el ritmo 🚀",
-                "Un sorbo de agua 💧",
-                "Cero distracciones 🤫"
+                Localization.reminderShouldersRelaxed,
+                Localization.reminderKeepItUp,
+                Localization.reminderStayHydrated,
+                Localization.reminderZeroDistractions
             ]
             // Show a focus tip briefly at start of work
             smartReminder = focusProtocols.randomElement()
             
         case .idle:
-            smartReminder = "¿Listo para enfocarte? 🤖"
+            smartReminder = Localization.reminderReadyFocus
         }
 
         // Hide after 7 seconds
@@ -238,7 +241,7 @@ struct RobotFace: View {
             
             // Interaction: Eyes or PAUSE text
             if !PomodoroTimer.shared.isRunning && PomodoroTimer.shared.phase != .idle {
-                Text("PAUSA")
+                Text(Localization.pauseLabel.uppercased())
                     .font(.system(size: 10, weight: .black))
                     .foregroundColor(statusColor)
             } else {

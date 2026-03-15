@@ -12,8 +12,8 @@ class DNDManager {
     
     private init() {}
     
-    /// Activa o desactiva el modo "No Molestar" (Focus Mode) en macOS.
-    /// - Parameter enabled: true para activar, false para desactivar.
+    /// Activates or deactivates "Do Not Disturb" (Focus Mode) on macOS.
+    /// - Parameter enabled: true to activate, false to deactivate.
     func setDND(enabled: Bool) {
         let script = """
         tell application "System Events"

@@ -1,47 +1,46 @@
 # FocusBuddy
 
-Pomodoro timer for macOS with a desktop companion. Lives in the menu bar and shows a floating buddy that reacts to your work sessions.
+A premium Pomodoro timer for macOS with a desktop companion. FocusBuddy lives in your menu bar and features a floating robot friend ("Blinky") that reacts to your focus sessions and provides smart reminders.
 
 ## Features
 
-- **Floating Buddy**: Mood states (idle, focused, relaxing, celebrating) and animations.
-- **Automated Focus Mode (DND)**: Syncs macOS "Do Not Disturb" with your focus sessions.
-- **Launch at Login**: Option to start FocusBuddy automatically with your Mac.
-- **Session Control**: Pause, Skip, or Finish Full Cycle with safety confirmations.
-- **Smart Reminders**: Productivity tips and postural reminders during session phases.
-- **Daily Stats**: Track total sessions and daily streaks with automated midnight reset.
-- **Draggable Window**: Adjustable buddy opacity and visibility.
+- **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Relaxing, Celebrating) and natural blinking animations.
+- **🌙 Automatic Focus Mode**: Seamlessly syncs macOS "Do Not Disturb" with your work sessions using AppleScript automation.
+- **📈 Productivity Stats**: Track your daily progress, total sessions, and maintain focus streaks with an automated midnight reset.
+- **🧠 Smart Reminders**: Context-aware productivity tips and postural reminders (e.g., "Take a deep breath", "Stay hydrated").
+- **⚙️ Deeply Customizable**: Adjustable focus/break durations, long break cycles, and buddy appearance (opacity, lighting effects).
+- **🚀 Native & Lightweight**: Built with SwiftUI and AppKit for maximum performance and a premium macOS feel.
 
 ## Requirements
 
-- macOS 13 or later (Sonoma/Sequoia recommended for Focus Mode sync)
-- Xcode 15+
+- macOS 13 or later (Ventura, Sonoma, or Sequoia recommended)
+- Xcode 15+ (for building from source)
 
-## Stack
+## Technology Stack
 
-- **Swift & SwiftUI**: Modern macOS development.
-- **AppKit**: Status bar integration (NSStatusItem) and floating windows.
-- **AppleScript**: System automation for macOS Focus Modes.
-- **ServiceManagement**: Modern login item management (SMAppService).
-- **Combine**: Reactive state management and event observation.
-- **UserDefaults**: Lightweight local persistence with background saving.
+- **Swift & SwiftUI**: Core app logic and modern user interface.
+- **AppKit**: Status bar integration (`NSStatusItem`) and floating companion window.
+- **Combine**: Reactive state management and optimized event observation.
+- **AppleScript**: System automation for macOS Focus Mode synchronization.
+- **ServiceManagement**: Modern login item management (`SMAppService`).
 
 ## Project Structure
 
 ```
 FocusBuddy/
-├── AppDelegate.swift        # Lifecycle and system integration
-├── PomodoroTimer.swift      # Core timer logic and stats management
-├── BuddySettings.swift      # Global settings and persistence
-├── DNDManager.swift         # macOS Focus Mode (DND) automation
-├── BuddyView.swift          # Floating buddy UI and animations
-├── MenuBarView.swift        # Menu bar interface and session controls
-└── SettingsView.swift       # Configuration UI
+├── AppDelegate.swift        # App lifecycle and menu bar management
+├── PomodoroTimer.swift      # Core timer engine, stats, and phase logic
+├── BuddySettings.swift      # Global configuration and persistence logic
+├── DNDManager.swift         # macOS Focus Mode automation bridge
+├── BuddyView.swift          # Blinky's UI, animations, and smart reminders
+├── MenuBarView.swift        # Main popover interface and session controls
+├── SettingsView.swift       # Configuration and timer preferences
+└── StatsView.swift         # Achievements and session history
 ```
 
 ## Status
 
-Ready for personal testing and refinement.
+Active development. Focused on premium UI/UX and system integration.
 
 ## License
 

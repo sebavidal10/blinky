@@ -23,8 +23,8 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(showAura, forKey: "showAura") }
     }
 
-    @Published var enableDNDSync: Bool = false {
-        didSet { UserDefaults.standard.set(enableDNDSync, forKey: "enableDNDSync") }
+    @Published var appLanguage: AppLanguage = .system {
+        didSet { UserDefaults.standard.set(appLanguage.rawValue, forKey: "appLanguage") }
     }
 
     @Published var launchAtLogin: Bool = false {
@@ -52,6 +52,13 @@ class BuddySettings: ObservableObject {
         isBuddyVisible = UserDefaults.standard.object(forKey: "isBuddyVisible") as? Bool ?? true
         showAura = UserDefaults.standard.object(forKey: "showAura") as? Bool ?? true
         enableDNDSync = UserDefaults.standard.bool(forKey: "enableDNDSync")
+        
+        if let langString = UserDefaults.standard.string(forKey: "appLanguage"),
+           let lang = AppLanguage(rawValue: langString) {
+            appLanguage = lang
+        } else {
+            appLanguage = .system
+        }
         
         // Sync launchAtLogin with system status
         launchAtLogin = SMAppService.mainApp.status == .enabled

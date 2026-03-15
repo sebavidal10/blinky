@@ -18,10 +18,10 @@ enum PetMood {
 
     var label: String {
         switch self {
-        case .idle:        return "Listo para trabajar"
-        case .focused:     return "Concentrado..."
-        case .relaxing:    return "Tomando un respiro"
-        case .celebrating: return "¡Gran sesión!"
+        case .idle:        return Localization.moodIdle
+        case .focused:     return Localization.moodFocused
+        case .relaxing:    return Localization.moodRelaxing
+        case .celebrating: return Localization.moodCelebrating
         }
     }
 }
@@ -286,7 +286,7 @@ class PomodoroTimer: ObservableObject {
             }
             
             mood = .celebrating
-            sendNotification(title: "¡Sesión completada! 🎉", body: "Iniciando descanso automático.")
+            sendNotification(title: Localization.notifSessionCompeleted, body: Localization.notifStartingBreak)
             
             // Auto-start the break
             isRunning = true
@@ -308,7 +308,7 @@ class PomodoroTimer: ObservableObject {
             isRunning = false // STOP: Wait for user to start next work session
             timer?.cancel()
             updateMood()
-            sendNotification(title: "Descanso terminado ⏱️", body: "Haz click en 'Iniciar' para volver a enfocarte.")
+            sendNotification(title: Localization.notifBreakEnded, body: Localization.notifClickStart)
 
         case .idle:
             break
@@ -339,7 +339,7 @@ class PomodoroTimer: ObservableObject {
         let session = FocusSession(
             id: UUID(),
             date: Date(),
-            goal: currentGoal.isEmpty ? "Sesión sin nombre" : currentGoal,
+            goal: currentGoal.isEmpty ? Localization.unnamedSession : currentGoal,
             durationInMinutes: elapsedMinutes
         )
         sessionsHistory.append(session)

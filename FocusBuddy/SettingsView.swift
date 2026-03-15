@@ -20,14 +20,14 @@ struct SettingsView: View {
                 VStack(spacing: 24) {
                     // Timer Configuration
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Temporizador")
+                        Text(Localization.settingsTimer)
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.secondary)
                         
                         VStack(alignment: .leading, spacing: 16) {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
-                                    Label("Enfoque", systemImage: "brain.head.profile")
+                                    Label(Localization.phaseFocus, systemImage: "brain.head.profile")
                                     Spacer()
                                     Text("\(Int(workMinutes)) min")
                                         .foregroundColor(.secondary)
@@ -41,7 +41,7 @@ struct SettingsView: View {
 
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
-                                    Label("Descanso corto", systemImage: "cup.and.saucer")
+                                    Label(Localization.phaseShortBreak, systemImage: "cup.and.saucer")
                                     Spacer()
                                     Text("\(Int(shortBreakMinutes)) min")
                                         .foregroundColor(.secondary)
@@ -55,7 +55,7 @@ struct SettingsView: View {
 
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
-                                    Label("Descanso largo", systemImage: "figure.walk")
+                                    Label(Localization.phaseLongBreak, systemImage: "figure.walk")
                                     Spacer()
                                     Text("\(Int(longBreakMinutes)) min")
                                         .foregroundColor(.secondary)
@@ -75,18 +75,34 @@ struct SettingsView: View {
 
                     // General Settings
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("General")
+                        Text(Localization.settingsGeneral)
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.secondary)
                         
                         Toggle(isOn: $buddySettings.launchAtLogin) {
-                            Label("Abrir al iniciar sesión", systemImage: "power")
+                            Label(Localization.launchAtLogin, systemImage: "power")
                                 .font(.system(size: 13))
                         }
 
                         Toggle(isOn: $buddySettings.enableDNDSync) {
-                            Label("No Molestar automático", systemImage: "moon.fill")
+                            Label(Localization.autoDND, systemImage: "moon.fill")
                                 .font(.system(size: 13))
+                        }
+                        
+                        Divider()
+                            .padding(.vertical, 4)
+                        
+                        HStack {
+                            Label(Localization.settingsLanguage, systemImage: "globe")
+                                .font(.system(size: 13))
+                            Spacer()
+                            Picker("", selection: $buddySettings.appLanguage) {
+                                ForEach(AppLanguage.allCases) { lang in
+                                    Text(lang.displayName).tag(lang)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .frame(width: 120)
                         }
                     }
                     .padding()
@@ -96,12 +112,12 @@ struct SettingsView: View {
 
                     // Cycles
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Ciclos")
+                        Text(Localization.settingsCycles)
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.secondary)
                         
                         HStack {
-                            Text("Sesiones antes del descanso largo")
+                            Text(Localization.sessionsBeforeLongBreak)
                                 .font(.system(size: 13))
                             Spacer()
                             Stepper("", value: $timer.sessionsUntilLongBreak, in: 2...8)

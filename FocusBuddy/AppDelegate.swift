@@ -22,7 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppDelegate.shared = self
         NSApp.setActivationPolicy(.accessory) // No Dock icon
         
-        // Pedir permiso de notificaciones
+        // Request notification permission
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
         setupMenuBarItem()
@@ -111,7 +111,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupTimerObserver() {
         PomodoroTimer.shared.$secondsRemaining
-            .combineLatest(PomodoroTimer.shared.$isRunning, PomodoroTimer.shared.$phase)
+            .removeDuplicates()
+            .combineLatest(
+                PomodoroTimer.shared.$isRunning.removeDuplicates(),
+                PomodoroTimer.shared.$phase.removeDuplicates()
+            )
             .receive(on: RunLoop.main)
             .sink { [weak self] _, isRunning, phase in
                 self?.updateStatusItemTitle(isRunning: isRunning, phase: phase)
@@ -163,7 +167,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         onboardingWindow.titleVisibility = .hidden
         onboardingWindow.titlebarAppearsTransparent = true
         onboardingWindow.isMovableByWindowBackground = true
-        onboardingWindow.contentView = NSHostingView(rootView: OnboardingView())
+        onboardingWindow.contentView = NSHostingView(
+            rootView: OnboardingView()
+                .environmentObject(PomodoroTimer.shared)
+        )
         
         NSApp.activate(ignoringOtherApps: true)
         onboardingWindow.makeKeyAndOrderFront(nil)

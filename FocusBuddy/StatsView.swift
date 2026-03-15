@@ -14,7 +14,7 @@ struct StatsView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Title
-            Text("Mis Logros")
+            Text(Localization.achievements)
                 .font(.system(size: 16, weight: .bold))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
@@ -23,13 +23,13 @@ struct StatsView: View {
 
             // Summary Cards
             HStack(spacing: 12) {
-                StatCard(title: "Hoy", value: "\(timer.totalSessionsToday)", type: .today)
-                StatCard(title: "Total", value: "\(timer.totalSessionsAllTime)", type: .total)
-                StatCard(title: "Racha", value: "\(timer.currentStreak)", type: .streak)
+                StatCard(title: Localization.statToday, value: "\(timer.totalSessionsToday)", type: .today)
+                StatCard(title: Localization.statTotal, value: "\(timer.totalSessionsAllTime)", type: .total)
+                StatCard(title: Localization.statStreak, value: "\(timer.currentStreak)", type: .streak)
             }
             .padding(.horizontal, 24)
 
-            Text("HISTORIAL RECIENTE")
+            Text(Localization.recentHistory)
                 .font(.system(size: 11, weight: .bold))
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -45,7 +45,7 @@ struct StatsView: View {
                             Image(systemName: "figure.walk")
                                 .font(.system(size: 40))
                                 .foregroundColor(.secondary.opacity(0.3))
-                            Text("Aún no hay sesiones registradas.\n¡Empieza tu primer pomodoro!")
+                            Text(Localization.noSessions)
                                 .multilineTextAlignment(.center)
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
@@ -187,7 +187,7 @@ struct SessionRow: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "es_ES")
+        formatter.locale = Locale(identifier: Localization.resolvedLanguage == "es" ? "es_ES" : "en_US")
         return formatter.string(from: date)
     }
 }

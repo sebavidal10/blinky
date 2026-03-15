@@ -67,14 +67,14 @@ struct MenuBarView: View {
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .help("Salir ⌘Q")
-                .confirmationDialog("¿Estás seguro que deseas salir?", isPresented: $showingQuitAlert, titleVisibility: .visible) {
-                    Button("Salir de FocusBuddy", role: .destructive) {
+                .help(Localization.quitHelp)
+                .confirmationDialog(Localization.quitTitle, isPresented: $showingQuitAlert, titleVisibility: .visible) {
+                    Button(Localization.quitButton, role: .destructive) {
                         NSApp.terminate(nil)
                     }
-                    Button("Cancelar", role: .cancel) {}
+                    Button(Localization.cancelButton, role: .cancel) {}
                 } message: {
-                    Text("Se perderá el progreso de la sesión actual.")
+                    Text(Localization.quitMessage)
                 }
             }
             .padding(.horizontal, 16)
@@ -93,7 +93,7 @@ struct MenuBarView: View {
                 Text("FocusBuddy")
                     .font(.system(size: 14, weight: .bold))
                 Spacer()
-                Text("Hoy: \(timer.totalSessionsToday) 🍅")
+                Text("\(Localization.today): \(timer.totalSessionsToday) 🍅")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
             }
@@ -110,15 +110,15 @@ struct MenuBarView: View {
                     .frame(width: 44, height: 44)
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(timer.phase == .idle ? "Listo para trabajar" : timer.mood.label)
+                    Text(timer.phase == .idle ? Localization.readyToWork : timer.mood.label)
                         .font(.system(size: 15, weight: .bold))
                     
                     if timer.phase != .idle {
-                        Text(timer.currentGoal.isEmpty ? (timer.phase == .working ? "Enfoque activo" : "Tiempo de descanso") : timer.currentGoal)
+                        Text(timer.currentGoal.isEmpty ? (timer.phase == .working ? Localization.activeFocus : Localization.breakTime) : timer.currentGoal)
                             .font(.system(size: 12))
                             .foregroundColor(.secondary)
                     } else {
-                        Text("Blinky está esperando por ti")
+                        Text(Localization.robotWaiting)
                             .font(.system(size: 12))
                             .foregroundColor(.secondary)
                     }
@@ -144,7 +144,7 @@ struct MenuBarView: View {
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundColor(.accentColor)
                             }
-                            Text("Nueva Sesión")
+                            Text(Localization.newSession)
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.primary)
                         }
@@ -162,7 +162,7 @@ struct MenuBarView: View {
                 } else if isPreparingSession && timer.phase == .idle {
                     // Step 2: Preparing Session
                     VStack(spacing: 16) {
-                        TextField("¿Cuál es tu objetivo?", text: $timer.currentGoal)
+                        TextField(Localization.whatIsYourGoal, text: $timer.currentGoal)
                             .textFieldStyle(.plain)
                             .font(.system(size: 16, weight: .medium))
                             .multilineTextAlignment(.center)
@@ -172,7 +172,7 @@ struct MenuBarView: View {
                             isPreparingSession = false
                             timer.start() 
                         }) {
-                            Text("Comenzar")
+                            Text(Localization.start)
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 24)
@@ -234,15 +234,15 @@ struct MenuBarView: View {
                                 .foregroundColor(.red)
                         }
                         .buttonStyle(.bordered)
-                        .help("Terminar Ciclo")
-                        .confirmationDialog("¿Terminar ciclo completo?", isPresented: $showingFinishCycleAlert, titleVisibility: .visible) {
-                            Button("Sí, terminar todo", role: .destructive) {
+                        .help(Localization.endCycle)
+                        .confirmationDialog(Localization.endCycleTitle, isPresented: $showingFinishCycleAlert, titleVisibility: .visible) {
+                            Button(Localization.endCycleButton, role: .destructive) {
                                 timer.finishFullCycle()
                                 isPreparingSession = false
                             }
-                            Button("Cancelar", role: .cancel) {}
+                            Button(Localization.cancelButton, role: .cancel) {}
                         } message: {
-                            Text("Se borrará el progreso de hoy y volverás a la configuración inicial.")
+                            Text(Localization.endCycleMessage)
                         }
 
                         if timer.phase == .working {
@@ -251,21 +251,21 @@ struct MenuBarView: View {
                                     .foregroundColor(.green)
                             }
                             .buttonStyle(.bordered)
-                            .help("Finalizar sesión")
-                            .confirmationDialog("¿Finalizar sesión de enfoque?", isPresented: $showingSkipAlert, titleVisibility: .visible) {
-                                Button("Sí, finalizar sesión", role: .destructive) {
+                            .help(Localization.finishSession)
+                            .confirmationDialog(Localization.finishSessionTitle, isPresented: $showingSkipAlert, titleVisibility: .visible) {
+                                Button(Localization.finishSessionButton, role: .destructive) {
                                     timer.skip()
                                 }
-                                Button("Cancelar", role: .cancel) {}
+                                Button(Localization.cancelButton, role: .cancel) {}
                             } message: {
-                                Text("Avanzarás al siguiente descanso.")
+                                Text(Localization.finishSessionMessage)
                             }
                         } else {
                             Button(action: timer.skip) {
                                 Image(systemName: "forward.end.fill")
                             }
                             .buttonStyle(.bordered)
-                            .help("Omitir descanso")
+                            .help(Localization.skipBreak)
                         }
                     }
                 }
@@ -282,7 +282,7 @@ struct MenuBarView: View {
                         .frame(width: 6, height: 6)
                 }
                 Spacer()
-                Text("Sesión \(timer.completedSessions + 1) de \(timer.sessionsUntilLongBreak)")
+                Text("\(Localization.sessionOf) \(timer.completedSessions + 1) \(Localization.of) \(timer.sessionsUntilLongBreak)")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
             }
@@ -295,12 +295,12 @@ struct MenuBarView: View {
 
             // Buddy Management Card
             VStack(spacing: 12) {
-                AppearanceToggle(title: "Mostrar Buddy", icon: buddySettings.isBuddyVisible ? "eye.fill" : "eye.slash.fill", isOn: Binding(
+                AppearanceToggle(title: Localization.showBuddy, icon: buddySettings.isBuddyVisible ? "eye.fill" : "eye.slash.fill", isOn: Binding(
                     get: { buddySettings.isBuddyVisible },
                     set: { buddySettings.isBuddyVisible = $0 }
                 ))
 
-                AppearanceToggle(title: "Efecto de Iluminación", icon: buddySettings.showAura ? "sun.max.fill" : "sun.max", isOn: $buddySettings.showAura)
+                AppearanceToggle(title: Localization.lightingEffect, icon: buddySettings.showAura ? "sun.max.fill" : "sun.max", isOn: $buddySettings.showAura)
             }
             .padding(14)
             .background(Color.primary.opacity(0.03))
@@ -314,8 +314,8 @@ struct MenuBarView: View {
     // MARK: - Helpers
 
     var mainButtonLabel: String {
-        if timer.isRunning { return "Pausar" }
-        return timer.phase == .idle ? "Iniciar" : "Continuar"
+        if timer.isRunning { return Localization.pauseLabel }
+        return timer.phase == .idle ? Localization.start : Localization.continueLabel
     }
 
     var mainButtonIcon: String {
@@ -332,10 +332,10 @@ struct MenuBarView: View {
 
     var phaseLabel: String {
         switch timer.phase {
-        case .idle:      return "Listo"
-        case .working:   return "Enfoque"
-        case .breakTime: return "Descanso corto"
-        case .longBreak: return "Descanso largo"
+        case .idle:      return Localization.phaseReady
+        case .working:   return Localization.phaseFocus
+        case .breakTime: return Localization.phaseShortBreak
+        case .longBreak: return Localization.phaseLongBreak
         }
     }
 
