@@ -24,8 +24,8 @@ class Localization {
     
     static var resolvedLanguage: String {
         if currentLanguage == .system {
-            let locale = Locale.current.language.languageCode?.identifier ?? "en"
-            return locale == "es" ? "es" : "en"
+            let locale = Locale.current.language.languageCode?.identifier ?? "es"
+            return locale == "en" ? "en" : "es"
         }
         return currentLanguage.rawValue
     }

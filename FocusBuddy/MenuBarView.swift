@@ -60,11 +60,11 @@ struct MenuBarView: View {
 
                 Button(action: { showingQuitAlert = true }) {
                     Image(systemName: "power")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.red.opacity(0.8))
-                        .padding(8)
-                        .background(Color.red.opacity(0.08))
-                        .clipShape(Circle())
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.red)
+                        .frame(width: 36, height: 36)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .help(Localization.quitHelp)
@@ -363,7 +363,7 @@ struct TabButton: View {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: isSelected ? .bold : .medium))
                 .frame(width: 36, height: 36)
-                .background(isSelected ? Color.accentColor : Color.clear)
+                .background(isSelected ? Color.accentColor : Color.primary.opacity(0.05))
                 .foregroundColor(isSelected ? .white : .primary)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }

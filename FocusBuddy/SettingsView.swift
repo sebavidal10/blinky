@@ -18,61 +18,6 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Timer Configuration
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text(Localization.settingsTimer)
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.secondary)
-                        
-                        VStack(alignment: .leading, spacing: 16) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Label(Localization.phaseFocus, systemImage: "brain.head.profile")
-                                    Spacer()
-                                    Text("\(Int(workMinutes)) min")
-                                        .foregroundColor(.secondary)
-                                        .font(.system(size: 12, design: .monospaced))
-                                }
-                                Slider(value: $workMinutes, in: 5...60, step: 5)
-                                    .onChange(of: workMinutes) { _, newValue in
-                                        timer.workDuration = Int(newValue) * 60
-                                    }
-                            }
-
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Label(Localization.phaseShortBreak, systemImage: "cup.and.saucer")
-                                    Spacer()
-                                    Text("\(Int(shortBreakMinutes)) min")
-                                        .foregroundColor(.secondary)
-                                        .font(.system(size: 12, design: .monospaced))
-                                }
-                                Slider(value: $shortBreakMinutes, in: 1...15, step: 1)
-                                    .onChange(of: shortBreakMinutes) { _, newValue in
-                                        timer.shortBreakDuration = Int(newValue) * 60
-                                    }
-                            }
-
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Label(Localization.phaseLongBreak, systemImage: "figure.walk")
-                                    Spacer()
-                                    Text("\(Int(longBreakMinutes)) min")
-                                        .foregroundColor(.secondary)
-                                        .font(.system(size: 12, design: .monospaced))
-                                }
-                                Slider(value: $longBreakMinutes, in: 5...30, step: 5)
-                                    .onChange(of: longBreakMinutes) { _, newValue in
-                                        timer.longBreakDuration = Int(newValue) * 60
-                                    }
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
                     // General Settings
                     VStack(alignment: .leading, spacing: 16) {
                         Text(Localization.settingsGeneral)
@@ -131,6 +76,61 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(.ultraThinMaterial)
                     .cornerRadius(16)
+
+                    // Timer Configuration
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(Localization.settingsTimer)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.secondary)
+                        
+                        VStack(alignment: .leading, spacing: 16) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label(Localization.phaseFocus, systemImage: "brain.head.profile")
+                                    Spacer()
+                                    Text("\(Int(workMinutes)) min")
+                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 12, design: .monospaced))
+                                }
+                                Slider(value: $workMinutes, in: 5...60, step: 5)
+                                    .onChange(of: workMinutes) { _, newValue in
+                                        timer.workDuration = Int(newValue) * 60
+                                    }
+                            }
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label(Localization.phaseShortBreak, systemImage: "cup.and.saucer")
+                                    Spacer()
+                                    Text("\(Int(shortBreakMinutes)) min")
+                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 12, design: .monospaced))
+                                }
+                                Slider(value: $shortBreakMinutes, in: 1...15, step: 1)
+                                    .onChange(of: shortBreakMinutes) { _, newValue in
+                                        timer.shortBreakDuration = Int(newValue) * 60
+                                    }
+                            }
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label(Localization.phaseLongBreak, systemImage: "figure.walk")
+                                    Spacer()
+                                    Text("\(Int(longBreakMinutes)) min")
+                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 12, design: .monospaced))
+                                }
+                                Slider(value: $longBreakMinutes, in: 5...30, step: 5)
+                                    .onChange(of: longBreakMinutes) { _, newValue in
+                                        timer.longBreakDuration = Int(newValue) * 60
+                                    }
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 }
                 .padding(.horizontal, 16)

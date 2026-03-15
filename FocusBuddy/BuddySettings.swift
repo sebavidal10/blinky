@@ -23,8 +23,12 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(showAura, forKey: "showAura") }
     }
 
-    @Published var appLanguage: AppLanguage = .system {
+    @Published var appLanguage: AppLanguage = .spanish {
         didSet { UserDefaults.standard.set(appLanguage.rawValue, forKey: "appLanguage") }
+    }
+
+    @Published var enableDNDSync: Bool = false {
+        didSet { UserDefaults.standard.set(enableDNDSync, forKey: "enableDNDSync") }
     }
 
     @Published var launchAtLogin: Bool = false {
@@ -57,7 +61,7 @@ class BuddySettings: ObservableObject {
            let lang = AppLanguage(rawValue: langString) {
             appLanguage = lang
         } else {
-            appLanguage = .system
+            appLanguage = .spanish
         }
         
         // Sync launchAtLogin with system status
