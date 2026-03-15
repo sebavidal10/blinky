@@ -12,10 +12,9 @@ import Combine
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var petWindow: NSWindow?
-    var settingsWindow: NSWindow?
-    var onboardingWindow: NSWindow?
     var popover: NSPopover?
     private var cancellables = Set<AnyCancellable>()
+    private var timerCancellable: AnyCancellable?
 
     static private(set) var shared: AppDelegate!
 
@@ -34,6 +33,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         setupVisibilityObservation()
+        setupTimerObserver()
     }
 
     // MARK: - Menu Bar
@@ -54,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func setupPopover() {
         popover = NSPopover()
-        popover?.contentSize = NSSize(width: 280, height: 320)
+        popover?.contentSize = NSSize(width: 320, height: 480)
         popover?.behavior = .transient
         popover?.contentViewController = NSHostingController(
             rootView: MenuBarView()
@@ -78,7 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func setupPetWindow() {
         let screen = NSScreen.main?.visibleFrame ?? .zero
-        let windowSize = CGSize(width: 200, height: 200)
+        let windowSize = CGSize(width: 200, height: 280)
         let origin = CGPoint(
             x: screen.maxX - windowSize.width - 20,
             y: screen.minY + 20
@@ -97,7 +97,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         petWindow?.level = .floating
         petWindow?.collectionBehavior = [.canJoinAllSpaces, .stationary]
         petWindow?.ignoresMouseEvents = false
-        petWindow?.isMovableByWindowBackground = false
+        petWindow?.isMovableByWindowBackground = true
         petWindow?.contentView = NSHostingView(
             rootView: BuddyView()
                 .environmentObject(PomodoroTimer.shared)
@@ -105,6 +105,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         if BuddySettings.shared.isBuddyVisible {
             petWindow?.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    private func setupTimerObserver() {
+        timerCancellable = PomodoroTimer.shared.$secondsRemaining
+            .combineLatest(PomodoroTimer.shared.$isRunning, PomodoroTimer.shared.$phase)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _, isRunning, phase in
+                self?.updateStatusItemTitle(isRunning: isRunning, phase: phase)
+            }
+    }
+
+    private func updateStatusItemTitle(isRunning: Bool, phase: TimerPhase) {
+        // Show timer if running OR if we are in a session (not idle)
+        if phase != .idle {
+            let title = PomodoroTimer.shared.timeString
+            let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .baselineOffset: -0.5 // Subtle adjustment to align with icon
+            ]
+            let attrTitle = NSAttributedString(string: title, attributes: attrs)
+            statusItem?.button?.attributedTitle = attrTitle
+        } else {
+            statusItem?.button?.title = ""
         }
     }
 
@@ -122,44 +147,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func showOnboarding() {
-        if onboardingWindow == nil {
-            onboardingWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 500, height: 450),
-                styleMask: [.titled, .closable, .fullSizeContentView],
-                backing: .buffered,
-                defer: false
-            )
-            onboardingWindow?.center()
-            onboardingWindow?.titleVisibility = .hidden
-            onboardingWindow?.titlebarAppearsTransparent = true
-            onboardingWindow?.isMovableByWindowBackground = true
-            onboardingWindow?.contentView = NSHostingView(rootView: OnboardingView())
-        }
+        let onboardingWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 450),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        onboardingWindow.center()
+        onboardingWindow.titleVisibility = .hidden
+        onboardingWindow.titlebarAppearsTransparent = true
+        onboardingWindow.isMovableByWindowBackground = true
+        onboardingWindow.contentView = NSHostingView(rootView: OnboardingView())
         
         NSApp.activate(ignoringOtherApps: true)
-        onboardingWindow?.makeKeyAndOrderFront(nil)
+        onboardingWindow.makeKeyAndOrderFront(nil)
     }
 
     @objc func showSettings() {
-        if settingsWindow == nil {
-            settingsWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 420, height: 440),
-                styleMask: [.titled, .closable, .fullSizeContentView],
-                backing: .buffered,
-                defer: false
-            )
-            settingsWindow?.center()
-            settingsWindow?.title = "Ajustes de FocusBuddy"
-            settingsWindow?.titleVisibility = .visible
-            settingsWindow?.titlebarAppearsTransparent = true
-            settingsWindow?.isMovableByWindowBackground = true
-            settingsWindow?.contentView = NSHostingView(
-                rootView: SettingsView()
-                    .environmentObject(PomodoroTimer.shared)
-            )
-        }
-        
-        NSApp.activate(ignoringOtherApps: true)
-        settingsWindow?.makeKeyAndOrderFront(nil)
+        togglePopover()
+    }
+    
+    @objc func showStats() {
+        togglePopover()
     }
 }

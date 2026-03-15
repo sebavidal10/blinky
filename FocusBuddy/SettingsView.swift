@@ -15,128 +15,90 @@ struct SettingsView: View {
     @State private var longBreakMinutes: Double = 15
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Timer Configuration
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Temporizador")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.secondary)
-                    
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Timer Configuration
                     VStack(alignment: .leading, spacing: 16) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Label("Enfoque", systemImage: "brain.head.profile")
-                                Spacer()
-                                Text("\(Int(workMinutes)) min")
-                                    .foregroundColor(.secondary)
-                                    .font(.system(size: 12, design: .monospaced))
-                            }
-                            Slider(value: $workMinutes, in: 5...60, step: 5)
-                                .onChange(of: workMinutes) { _, newValue in
-                                    timer.workDuration = Int(newValue) * 60
+                        Text("Temporizador")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.secondary)
+                        
+                        VStack(alignment: .leading, spacing: 16) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label("Enfoque", systemImage: "brain.head.profile")
+                                    Spacer()
+                                    Text("\(Int(workMinutes)) min")
+                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 12, design: .monospaced))
                                 }
-                        }
+                                Slider(value: $workMinutes, in: 5...60, step: 5)
+                                    .onChange(of: workMinutes) { _, newValue in
+                                        timer.workDuration = Int(newValue) * 60
+                                    }
+                            }
 
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Label("Descanso corto", systemImage: "cup.and.saucer")
-                                Spacer()
-                                Text("\(Int(shortBreakMinutes)) min")
-                                    .foregroundColor(.secondary)
-                                    .font(.system(size: 12, design: .monospaced))
-                            }
-                            Slider(value: $shortBreakMinutes, in: 1...15, step: 1)
-                                .onChange(of: shortBreakMinutes) { _, newValue in
-                                    timer.shortBreakDuration = Int(newValue) * 60
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label("Descanso corto", systemImage: "cup.and.saucer")
+                                    Spacer()
+                                    Text("\(Int(shortBreakMinutes)) min")
+                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 12, design: .monospaced))
                                 }
-                        }
+                                Slider(value: $shortBreakMinutes, in: 1...15, step: 1)
+                                    .onChange(of: shortBreakMinutes) { _, newValue in
+                                        timer.shortBreakDuration = Int(newValue) * 60
+                                    }
+                            }
 
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Label("Descanso largo", systemImage: "figure.walk")
-                                Spacer()
-                                Text("\(Int(longBreakMinutes)) min")
-                                    .foregroundColor(.secondary)
-                                    .font(.system(size: 12, design: .monospaced))
-                            }
-                            Slider(value: $longBreakMinutes, in: 5...30, step: 5)
-                                .onChange(of: longBreakMinutes) { _, newValue in
-                                    timer.longBreakDuration = Int(newValue) * 60
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label("Descanso largo", systemImage: "figure.walk")
+                                    Spacer()
+                                    Text("\(Int(longBreakMinutes)) min")
+                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 12, design: .monospaced))
                                 }
+                                Slider(value: $longBreakMinutes, in: 5...30, step: 5)
+                                    .onChange(of: longBreakMinutes) { _, newValue in
+                                        timer.longBreakDuration = Int(newValue) * 60
+                                    }
+                            }
                         }
                     }
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
 
-                // Cycles
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Ciclos")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.secondary)
-                    
-                    Stepper(
-                        "Sesiones antes del descanso largo: \(timer.sessionsUntilLongBreak)",
-                        value: $timer.sessionsUntilLongBreak,
-                        in: 2...8
-                    )
-                    .font(.system(size: 13))
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
-
-                // Buddy Appearance
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Apariencia del Buddy")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.secondary)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
+                    // Cycles
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Ciclos")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.secondary)
+                        
                         HStack {
-                            Label("Opacidad", systemImage: "circle.lefthalf.filled")
+                            Text("Sesiones antes del descanso largo")
+                                .font(.system(size: 13))
                             Spacer()
-                            Text("\(Int(buddySettings.buddyOpacity * 100))%")
-                                .foregroundColor(.secondary)
-                                .font(.system(size: 12))
-                        }
-                        Slider(value: $buddySettings.buddyOpacity, in: 0.1...1.0, step: 0.1)
-                    }
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
-                
-                // Weekly productivity (Super simple)
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Actividad Reciente")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.secondary)
-                    
-                    HStack(alignment: .bottom, spacing: 8) {
-                        ForEach(timer.sessionsInLast7Days(), id: \.0) { date, count in
-                            VStack(spacing: 4) {
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(count > 0 ? Color.blue.opacity(0.6) : Color.primary.opacity(0.05))
-                                    .frame(width: 20, height: max(4, CGFloat(count) * 10))
-                                
-                                Text(dateSymbol(for: date))
-                                    .font(.system(size: 8))
-                                    .foregroundColor(.secondary)
-                            }
-                            .frame(maxWidth: .infinity)
+                            Stepper("", value: $timer.sessionsUntilLongBreak, in: 2...8)
+                                .labelsHidden()
+                            Text("\(timer.sessionsUntilLongBreak)")
+                                .font(.system(size: 13, design: .monospaced))
+                                .frame(width: 20)
                         }
                     }
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
+
                 }
-                .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 20)
+                .padding(.top, 16) 
             }
-            .padding(20)
         }
-        .frame(width: 400, height: 450)
         .onAppear {
             workMinutes = Double(timer.workDuration / 60)
             shortBreakMinutes = Double(timer.shortBreakDuration / 60)

@@ -18,6 +18,10 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(isBuddyVisible, forKey: "isBuddyVisible") }
     }
 
+    @Published var showAura: Bool = true {
+        didSet { UserDefaults.standard.set(showAura, forKey: "showAura") }
+    }
+
     private init() {
         let savedOpacity = UserDefaults.standard.double(forKey: "buddyOpacity")
         if savedOpacity > 0 { 
@@ -27,5 +31,6 @@ class BuddySettings: ObservableObject {
         }
 
         isBuddyVisible = UserDefaults.standard.object(forKey: "isBuddyVisible") as? Bool ?? true
+        showAura = UserDefaults.standard.object(forKey: "showAura") as? Bool ?? true
     }
 }

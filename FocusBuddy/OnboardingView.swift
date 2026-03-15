@@ -45,9 +45,7 @@ struct OnboardingView: View {
                     if currentPage == i {
                         VStack(spacing: 30) {
                             if pages[i].isAsset {
-                                Image(pages[i].image)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
+                                RobotFace(mood: .relaxing, isBlinking: false)
                                     .frame(width: 120, height: 120)
                                     .shadow(radius: 10)
                             } else {

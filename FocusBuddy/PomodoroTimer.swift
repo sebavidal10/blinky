@@ -26,6 +26,13 @@ enum PetMood {
     }
 }
 
+struct FocusSession: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    let goal: String
+    let durationInMinutes: Int
+}
+
 class PomodoroTimer: ObservableObject {
     static let shared = PomodoroTimer()
 
@@ -51,6 +58,9 @@ class PomodoroTimer: ObservableObject {
     @Published var sessionsUntilLongBreak: Int = 4 {
         didSet { UserDefaults.standard.set(sessionsUntilLongBreak, forKey: "sessionsUntilLongBreak") }
     }
+    @Published var currentGoal: String = "" {
+        didSet { UserDefaults.standard.set(currentGoal, forKey: "currentGoal") }
+    }
 
     // MARK: - State
     @Published var phase: TimerPhase = .idle
@@ -69,7 +79,13 @@ class PomodoroTimer: ObservableObject {
     @Published var currentStreak: Int = 0 {
         didSet { UserDefaults.standard.set(currentStreak, forKey: "currentStreak") }
     }
-    @Published var sessionHistory: [String: Int] = [:]
+    @Published var sessionsHistory: [FocusSession] = [] {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(sessionsHistory) {
+                UserDefaults.standard.set(encoded, forKey: "sessionsHistory")
+            }
+        }
+    }
 
     private var timer: AnyCancellable?
 
@@ -98,7 +114,11 @@ class PomodoroTimer: ObservableObject {
         totalSessionsToday   = ud.integer(forKey: "totalSessionsToday")
         totalSessionsAllTime = ud.integer(forKey: "totalSessionsAllTime")
         currentStreak        = ud.integer(forKey: "currentStreak")
-        sessionHistory       = ud.dictionary(forKey: "sessionHistory") as? [String: Int] ?? [:]
+        currentGoal          = ud.string(forKey: "currentGoal") ?? ""
+        if let data = ud.data(forKey: "sessionsHistory"),
+           let decoded = try? JSONDecoder().decode([FocusSession].self, from: data) {
+            sessionsHistory = decoded
+        }
         
         validateDurations()
         secondsRemaining     = workDuration
@@ -195,6 +215,8 @@ class PomodoroTimer: ObservableObject {
     }
 
     private func advancePhase() {
+        let previousPhase = phase
+        
         switch phase {
         case .working:
             completedSessions    += 1
@@ -211,7 +233,12 @@ class PomodoroTimer: ObservableObject {
             }
             
             mood = .celebrating
-            sendNotification(title: "¡Sesión completada! 🎉", body: "Tómate un descanso, lo mereces.")
+            sendNotification(title: "¡Sesión completada! 🎉", body: "Iniciando descanso automático.")
+            
+            // Auto-start the break
+            isRunning = true
+            startTicking()
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
                 self?.updateMood()
             }
@@ -219,13 +246,14 @@ class PomodoroTimer: ObservableObject {
         case .breakTime, .longBreak:
             phase = .working
             secondsRemaining = workDuration
+            isRunning = false // STOP: Wait for user to start next work session
+            timer?.cancel()
             updateMood()
-            sendNotification(title: "A trabajar 😤", body: "El descanso terminó. ¡Vamos!")
+            sendNotification(title: "Descanso terminado ⏱️", body: "Haz click en 'Iniciar' para volver a enfocarte.")
 
         case .idle:
             break
         }
-        if isRunning { startTicking() }
     }
 
     private func updateMood() {
@@ -246,23 +274,26 @@ class PomodoroTimer: ObservableObject {
     }
 
     private func updateSessionHistory() {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let key = formatter.string(from: Date())
-        sessionHistory[key] = (sessionHistory[key] ?? 0) + 1
-        UserDefaults.standard.set(sessionHistory, forKey: "sessionHistory")
+        let elapsedSeconds = workDuration - secondsRemaining
+        let elapsedMinutes = max(1, elapsedSeconds / 60) // At least 1 min if any work was done
+        
+        let session = FocusSession(
+            id: UUID(),
+            date: Date(),
+            goal: currentGoal.isEmpty ? "Sesión sin nombre" : currentGoal,
+            durationInMinutes: elapsedMinutes
+        )
+        sessionsHistory.append(session)
     }
 
     func sessionsInLast7Days() -> [(Date, Int)] {
         let calendar = Calendar.current
         var results: [(Date, Int)] = []
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
         
         for i in (0..<7).reversed() {
             if let date = calendar.date(byAdding: .day, value: -i, to: Date()) {
-                let key = formatter.string(from: date)
-                results.append((date, sessionHistory[key] ?? 0))
+                let count = sessionsHistory.filter { calendar.isDate($0.date, inSameDayAs: date) }.count
+                results.append((date, count))
             }
         }
         return results
