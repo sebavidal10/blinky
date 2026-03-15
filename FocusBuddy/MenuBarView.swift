@@ -21,42 +21,18 @@ struct MenuBarView: View {
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 6)
-
-            // Progression info
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("Nivel \(BuddySettings.shared.buddyLevel)")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.accentColor)
-                
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.primary.opacity(0.1))
-                        Capsule()
-                            .fill(Color.accentColor)
-                            .frame(width: geo.size.width * BuddySettings.shared.progressToNextLevel)
-                    }
-                }
-                .frame(height: 4)
-                .frame(maxWidth: 60)
-                
-                Spacer()
-                
-                Text("\(BuddySettings.shared.energyXP) / \(BuddySettings.shared.xpToNextLevel) XP")
-                    .font(.system(size: 9))
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, 16)
+            .padding(.top, 16)
             .padding(.bottom, 12)
 
             Divider()
 
-            // Pet mood
-            HStack(spacing: 10) {
-                Text(timer.mood.emoji)
-                    .font(.system(size: 28))
+            // Pet mood / Robot State
+            HStack(spacing: 12) {
+                Image("RobotBuddy")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 32, height: 32)
+                
                 VStack(alignment: .leading, spacing: 2) {
                     Text(timer.mood.label)
                         .font(.system(size: 12, weight: .semibold))
@@ -67,16 +43,16 @@ struct MenuBarView: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 12)
 
             // Timer display
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.primary.opacity(0.06))
+                    .fill(Color.primary.opacity(0.04))
 
-                VStack(spacing: 6) {
+                VStack(spacing: 8) {
                     Text(timer.timeString)
-                        .font(.system(size: 36, weight: .thin, design: .monospaced))
+                        .font(.system(size: 38, weight: .thin, design: .monospaced))
                         .foregroundColor(.primary)
 
                     // Progress bar
@@ -84,17 +60,17 @@ struct MenuBarView: View {
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(Color.primary.opacity(0.1))
-                                .frame(height: 4)
+                                .frame(height: 3)
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(progressColor)
-                                .frame(width: geo.size.width * timer.progress, height: 4)
+                                .frame(width: geo.size.width * timer.progress, height: 3)
                                 .animation(.linear(duration: 1), value: timer.progress)
                         }
                     }
-                    .frame(height: 4)
+                    .frame(height: 3)
                     .padding(.horizontal, 16)
                 }
-                .padding(.vertical, 12)
+                .padding(.vertical, 14)
             }
             .padding(.horizontal, 16)
 
@@ -105,8 +81,7 @@ struct MenuBarView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(timer.isRunning ? .orange : .blue)
-                .disabled(timer.mood == .celebrating)
+                .tint(timer.isRunning ? .blue : .accentColor)
 
                 Button(action: timer.reset) {
                     Image(systemName: "arrow.counterclockwise")
@@ -119,18 +94,18 @@ struct MenuBarView: View {
                 .buttonStyle(.bordered)
             }
             .padding(.horizontal, 16)
-            .padding(.top, 10)
+            .padding(.top, 12)
 
             Divider()
-                .padding(.top, 10)
+                .padding(.top, 12)
 
             // Sessions dots
             HStack(spacing: 6) {
                 ForEach(0..<timer.sessionsUntilLongBreak, id: \.self) { i in
                     Circle()
                         .fill(i < (timer.completedSessions % timer.sessionsUntilLongBreak)
-                              ? Color.orange : Color.primary.opacity(0.15))
-                        .frame(width: 8, height: 8)
+                              ? progressColor : Color.primary.opacity(0.15))
+                        .frame(width: 7, height: 7)
                 }
                 Spacer()
                 Text("Sesión \(timer.completedSessions + 1)")
@@ -138,7 +113,7 @@ struct MenuBarView: View {
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
 
             Divider()
 
@@ -159,7 +134,7 @@ struct MenuBarView: View {
                 .controlSize(.small)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
 
             Divider()
 
@@ -232,9 +207,9 @@ struct MenuBarView: View {
 
     var progressColor: Color {
         switch timer.phase {
-        case .working:   return .orange
+        case .working:   return .blue
         case .breakTime: return .green
-        case .longBreak: return .blue
+        case .longBreak: return .cyan
         case .idle:      return .gray
         }
     }

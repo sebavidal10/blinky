@@ -29,10 +29,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenuBarItem()
         setupPetWindow()
         
-        // Setup Keyboard Monitor
-        setupKeyboardMonitor()
-        checkAccessibilityPermissions()
-
         if !UserDefaults.standard.bool(forKey: "hasFinishedOnboarding") {
             showOnboarding()
         }
@@ -123,25 +119,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
             .store(in: &cancellables)
-    }
-
-    // MARK: - Activity Monitoring
-
-    private func setupKeyboardMonitor() {
-        NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { _ in
-            PomodoroTimer.shared.registerActivity()
-        }
-    }
-
-    private func checkAccessibilityPermissions() {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
-        let accessEnabled = AXIsProcessTrustedWithOptions(options as CFDictionary)
-        
-        if !accessEnabled {
-            print("⚠️ AVISO: FocusBuddy necesita permisos de Accesibilidad para detectar el tecleo.")
-            print("Vaya a: Ajustes del Sistema > Privacidad y Seguridad > Accesibilidad")
-            print("Y active el interruptor para FocusBuddy.")
-        }
     }
 
     func showOnboarding() {

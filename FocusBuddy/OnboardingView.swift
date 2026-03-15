@@ -13,28 +13,28 @@ struct OnboardingView: View {
     
     let pages = [
         OnboardingPage(
-            title: "¡Bienvenido a FocusBuddy!",
-            description: "Tu nuevo compañero de productividad que vive en tu escritorio.",
-            image: "🐱",
-            color: .blue
+            title: "FocusBuddy Pro",
+            description: "Tu compañero de productividad minimalista. Diseñado para vivir en tu escritorio sin distraer.",
+            image: "RobotBuddy",
+            isAsset: true
         ),
         OnboardingPage(
             title: "Enfócate con Pomodoro",
-            description: "Trabaja en bloques de 25 minutos. Tu Buddy reaccionará en tiempo real a tu esfuerzo.",
-            image: "🤓",
-            color: .orange
+            description: "Trabaja en bloques de 25 minutos. El Buddy reacciona sutilmente a tu progreso.",
+            image: "brain.head.profile",
+            isAsset: false
         ),
         OnboardingPage(
-            title: "Evoluciona a tu Buddy",
-            description: "Gana XP por cada sesión. Sube de nivel y desbloquea nuevas reacciones y secretos.",
-            image: "🏆",
-            color: .yellow
+            title: "Control Total",
+            description: "Oculta el Buddy cuando necesites espacio o muévelo libremente usando el tirador superior.",
+            image: "eye.fill",
+            isAsset: false
         ),
         OnboardingPage(
-            title: "Muévelo con Libertad",
-            description: "Arrastra desde el pequeño icono superior para posicionarlo donde quieras.",
-            image: "🎯",
-            color: .green
+            title: "Privacidad Primero",
+            description: "Sin monitoreo de teclado ni mouse. FocusBuddy solo depende de tu temporizador.",
+            image: "lock.shield.fill",
+            isAsset: false
         )
     ]
     
@@ -44,9 +44,17 @@ struct OnboardingView: View {
                 ForEach(0..<pages.count, id: \.self) { i in
                     if currentPage == i {
                         VStack(spacing: 30) {
-                            Text(pages[i].image)
-                                .font(.system(size: 100))
-                                .shadow(color: pages[i].color.opacity(0.3), radius: 20)
+                            if pages[i].isAsset {
+                                Image(pages[i].image)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 120, height: 120)
+                                    .shadow(radius: 10)
+                            } else {
+                                Image(systemName: pages[i].image)
+                                    .font(.system(size: 80))
+                                    .foregroundColor(.accentColor)
+                            }
                             
                             VStack(spacing: 12) {
                                 Text(pages[i].title)
@@ -70,7 +78,6 @@ struct OnboardingView: View {
             
             // Footer
             HStack {
-                // Page Indicator
                 HStack(spacing: 8) {
                     ForEach(0..<pages.count, id: \.self) { i in
                         Circle()
@@ -85,14 +92,13 @@ struct OnboardingView: View {
                     Button("Siguiente") {
                         withAnimation { currentPage += 1 }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.bordered)
                 } else {
                     Button("¡Empezar!") {
                         UserDefaults.standard.set(true, forKey: "hasFinishedOnboarding")
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.green)
                 }
             }
             .padding(30)
@@ -106,9 +112,5 @@ struct OnboardingPage {
     let title: String
     let description: String
     let image: String
-    let color: Color
-}
-
-#Preview {
-    OnboardingView()
+    let isAsset: Bool
 }

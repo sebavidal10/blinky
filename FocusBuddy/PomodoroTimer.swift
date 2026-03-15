@@ -14,31 +14,14 @@ enum TimerPhase {
 }
 
 enum PetMood {
-    case idle, focused, tired, celebrating, sleeping, typing, distracted, exhausted
-
-    var emoji: String {
-        switch self {
-        case .idle:        return "🐱"
-        case .focused:     return "😤"
-        case .tired:       return "😩"
-        case .celebrating: return "🎉"
-        case .sleeping:    return "😴"
-        case .typing:      return "🤓"
-        case .distracted:  return "🧐"
-        case .exhausted:   return "🫠"
-        }
-    }
+    case idle, focused, relaxing, celebrating
 
     var label: String {
         switch self {
         case .idle:        return "Listo para trabajar"
         case .focused:     return "Concentrado..."
-        case .tired:       return "Necesitas descanso"
-        case .celebrating: return "¡Excelente trabajo!"
-        case .sleeping:    return "Zzz..."
-        case .typing:      return "¡A tope! 🤓"
-        case .distracted:  return "¿Sigues ahí? 🧐"
-        case .exhausted:   return "¡Qué esfuerzo! 🫠"
+        case .relaxing:    return "Tomando un respiro"
+        case .celebrating: return "¡Gran sesión!"
         }
     }
 }
@@ -89,10 +72,6 @@ class PomodoroTimer: ObservableObject {
     @Published var sessionHistory: [String: Int] = [:]
 
     private var timer: AnyCancellable?
-    private var activityTimer: AnyCancellable?
-    private var lastActivityTime: Date = Date()
-    private var keypressHistory: [Date] = []
-    private var typingStartTime: Date? = nil
 
     // MARK: - Init
 
@@ -174,17 +153,15 @@ class PomodoroTimer: ObservableObject {
             secondsRemaining = workDuration
         }
         isRunning = true
-        evaluateIntensity()
+        updateMood()
         startTicking()
-        startActivityTracking()
         UserDefaults.standard.set(Date(), forKey: "lastActiveDate")
     }
 
     func pause() {
         isRunning = false
         timer?.cancel()
-        mood = .idle
-        evaluateIntensity()
+        updateMood()
     }
 
     func reset() {
@@ -192,7 +169,7 @@ class PomodoroTimer: ObservableObject {
         timer?.cancel()
         phase = .idle
         secondsRemaining = workDuration
-        mood = .idle
+        updateMood()
     }
 
     func skip() {
@@ -212,7 +189,6 @@ class PomodoroTimer: ObservableObject {
         guard isRunning else { return }
         if secondsRemaining > 0 {
             secondsRemaining -= 1
-            evaluateIntensity()
         } else {
             advancePhase()
         }
@@ -234,24 +210,16 @@ class PomodoroTimer: ObservableObject {
                 secondsRemaining = shortBreakDuration
             }
             
-            // Award XP and Coins
-            let baseXP = 25
-            let baseCoins = 10
-            let intensityBonusMultiplier = mood == .typing ? 1.5 : 1.0
-            
-            BuddySettings.shared.addXP(Int(Double(baseXP) * intensityBonusMultiplier))
-            BuddySettings.shared.addCoins(Int(Double(baseCoins) * intensityBonusMultiplier))
-
             mood = .celebrating
             sendNotification(title: "¡Sesión completada! 🎉", body: "Tómate un descanso, lo mereces.")
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-                self?.evaluateIntensity()
+                self?.updateMood()
             }
 
         case .breakTime, .longBreak:
             phase = .working
             secondsRemaining = workDuration
-            mood = .focused
+            updateMood()
             sendNotification(title: "A trabajar 😤", body: "El descanso terminó. ¡Vamos!")
 
         case .idle:
@@ -260,97 +228,21 @@ class PomodoroTimer: ObservableObject {
         if isRunning { startTicking() }
     }
 
-    private func startActivityTracking() {
-        activityTimer = Timer.publish(every: 5, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                self?.evaluateIntensity()
-            }
-    }
-
-    private func evaluateIntensity() {
-        let now = Date()
-        let idleTime = now.timeIntervalSince(lastActivityTime)
-        
-        // 1. Sleeping: > 10 min inactividad total
-        if idleTime > 600 {
-            mood = .sleeping
-            typingStartTime = nil
-            return
-        }
-
+    private func updateMood() {
         switch phase {
         case .working:
-            guard isRunning else {
-                mood = .idle
-                typingStartTime = nil
-                return
-            }
-
-            // Limpiar historial de teclas (ventana de 30s)
-            keypressHistory = keypressHistory.filter { now.timeIntervalSince($0) < 30 }
-            
-            // 2. Typing: constante (> 10 pulsaciones en 30s)
-            if keypressHistory.count > 10 {
-                if typingStartTime == nil { typingStartTime = now }
-                
-                // 3. Exhausted: typing por > 15 min
-                if let start = typingStartTime, now.timeIntervalSince(start) > 900 {
-                    mood = .exhausted
-                } else {
-                    mood = .typing
-                }
-            } else {
-                typingStartTime = nil
-                
-                // 4. Distracted: working + 3 min sin tecleo
-                if idleTime > 180 {
-                    mood = .distracted
-                } else {
-                    // Cansancio base si ha pasado mucho tiempo
-                    let elapsed = workDuration - secondsRemaining
-                    if elapsed > workDuration / 2 {
-                        mood = .tired
-                    } else {
-                        mood = .focused
-                    }
-                }
-            }
-
+            mood = isRunning ? .focused : .idle
         case .breakTime, .longBreak:
-            mood = .celebrating
-            typingStartTime = nil
-
+            mood = .relaxing
         case .idle:
-            if idleTime > 300 {
-                mood = .sleeping
-            } else {
-                mood = .idle
-            }
-            typingStartTime = nil
-        }
-    }
-
-    func registerActivity() {
-        lastActivityTime = Date()
-        keypressHistory.append(Date())
-        
-        // Notificar vibración inmediata si estamos en modo typing
-        if mood == .typing {
-            NotificationCenter.default.post(name: NSNotification.Name("BuddyDidType"), object: nil)
-        }
-        
-        if mood == .sleeping || mood == .distracted {
-            evaluateIntensity()
+            mood = .idle
         }
     }
 
     // MARK: - Notifications
 
     private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, _ in
-            print("Notificaciones: \(granted ? "permitidas" : "denegadas")")
-        }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, _ in }
     }
 
     private func updateSessionHistory() {
