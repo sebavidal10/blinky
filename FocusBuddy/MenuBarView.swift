@@ -21,7 +21,35 @@ struct MenuBarView: View {
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.top, 12)
+            .padding(.bottom, 6)
+
+            // Progression info
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("Nivel \(BuddySettings.shared.buddyLevel)")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.accentColor)
+                
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.primary.opacity(0.1))
+                        Capsule()
+                            .fill(Color.accentColor)
+                            .frame(width: geo.size.width * BuddySettings.shared.progressToNextLevel)
+                    }
+                }
+                .frame(height: 4)
+                .frame(maxWidth: 60)
+                
+                Spacer()
+                
+                Text("\(BuddySettings.shared.energyXP) / \(BuddySettings.shared.xpToNextLevel) XP")
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
 
             Divider()
 
@@ -114,20 +142,62 @@ struct MenuBarView: View {
 
             Divider()
 
-            // Quit
-            Button(action: { NSApp.terminate(nil) }) {
-                HStack {
-                    Text("Salir")
-                        .font(.system(size: 11))
-                    Spacer()
-                    Text("⌘Q")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
+            // Buddy Management
+            VStack(spacing: 8) {
+                Toggle(isOn: Binding(
+                    get: { BuddySettings.shared.isBuddyVisible },
+                    set: { BuddySettings.shared.isBuddyVisible = $0 }
+                )) {
+                    HStack {
+                        Image(systemName: BuddySettings.shared.isBuddyVisible ? "eye.fill" : "eye.slash.fill")
+                            .foregroundColor(.secondary)
+                        Text("Mostrar Buddy")
+                            .font(.system(size: 11, weight: .medium))
+                    }
                 }
+                .toggleStyle(.switch)
+                .controlSize(.small)
             }
-            .buttonStyle(.plain)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+
+            Divider()
+
+            // Menu Footer
+            HStack(spacing: 12) {
+                Button(action: { 
+                    AppDelegate.shared.showSettings()
+                    AppDelegate.shared.popover?.performClose(nil)
+                }) {
+                    HStack {
+                        Image(systemName: "gearshape.fill")
+                        Text("Ajustes")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(Color.primary.opacity(0.05))
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .medium))
+
+                Button(action: { NSApp.terminate(nil) }) {
+                    HStack {
+                        Text("Salir")
+                        Text("⌘Q").font(.system(size: 9)).opacity(0.5)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(Color.red.opacity(0.1))
+                    .foregroundColor(.red)
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .bold))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.primary.opacity(0.03))
         }
         .frame(width: 280)
     }
