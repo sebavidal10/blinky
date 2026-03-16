@@ -35,6 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupVisibilityObservation()
         setupTimerObserver()
         setupWakeObservation()
+        setupInsomniaObservation()
     }
 
     // MARK: - Menu Bar
@@ -71,6 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 popover.performClose(nil)
             } else {
                 popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+                popover.contentViewController?.view.window?.makeKey()
             }
         }
     }
@@ -125,22 +127,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func updateStatusItemTitle(isRunning: Bool, phase: TimerPhase) {
         let button = statusItem?.button
+        
+        // Ensure everything is cleared first
+        button?.contentTintColor = nil
+        button?.title = ""
+        button?.attributedTitle = NSAttributedString(string: "")
+
         if phase != .idle {
             let title = PomodoroTimer.shared.timeString
             
-            // Only update if text actually changed to save CPU
-            if button?.title != title {
-                let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
-                let attrs: [NSAttributedString.Key: Any] = [
-                    .font: font,
-                    .baselineOffset: -0.5
-                ]
-                button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
-            }
-        } else {
-            button?.attributedTitle = NSAttributedString(string: "")
-            button?.title = ""
+            let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .baselineOffset: -0.5
+            ]
+            button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
         }
+    }
+
+    private func setupInsomniaObservation() {
+        BuddySettings.shared.$isInsomniaEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.updateStatusItemTitle(
+                    isRunning: PomodoroTimer.shared.isRunning,
+                    phase: PomodoroTimer.shared.phase
+                )
+            }
+            .store(in: &cancellables)
     }
 
     private func setupVisibilityObservation() {

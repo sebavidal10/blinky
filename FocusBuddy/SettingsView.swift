@@ -28,11 +28,13 @@ struct SettingsView: View {
                             Label(Localization.launchAtLogin, systemImage: "power")
                                 .font(.system(size: 13))
                         }
+                        .tint(.green)
 
                         Toggle(isOn: $buddySettings.enableDNDSync) {
                             Label(Localization.autoDND, systemImage: "moon.fill")
                                 .font(.system(size: 13))
                         }
+                        .tint(.green)
                         
                         Divider()
                             .padding(.vertical, 4)

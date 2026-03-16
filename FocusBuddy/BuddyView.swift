@@ -32,7 +32,7 @@ struct BuddyView: View {
                     }
 
                     // NATIVE ROBOT FACE
-                    RobotFace(mood: timer.mood, isBlinking: blinkScale < 1.0)
+                    RobotFace(mood: timer.mood, isBlinking: blinkScale < 1.0, isInsomniaActive: buddySettings.isInsomniaEnabled)
                         .frame(width: 90, height: 90)
                         .offset(y: floatOffset + 8) // Centralized offset
                         .scaleEffect(isHovering ? 1.05 : 1.0)
@@ -209,6 +209,7 @@ struct MessageBubble: View {
 struct RobotFace: View {
     let mood: PetMood
     let isBlinking: Bool
+    var isInsomniaActive: Bool = false
     
     var body: some View {
         ZStack {
@@ -246,8 +247,8 @@ struct RobotFace: View {
                     .foregroundColor(statusColor)
             } else {
                 HStack(spacing: 14) {
-                    Eye(mood: mood, isBlinking: isBlinking)
-                    Eye(mood: mood, isBlinking: isBlinking)
+                    Eye(mood: mood, isBlinking: isBlinking, isInsomniaActive: isInsomniaActive)
+                    Eye(mood: mood, isBlinking: isBlinking, isInsomniaActive: isInsomniaActive)
                 }
                 .offset(y: -2)
                 .overlay(
@@ -307,6 +308,7 @@ struct FocusGlasses: View {
 struct Eye: View {
     let mood: PetMood
     let isBlinking: Bool
+    var isInsomniaActive: Bool = false
     
     var body: some View {
         Group {
@@ -350,6 +352,7 @@ struct Eye: View {
     }
     
     var eyeColor: Color {
+        if isInsomniaActive { return .orange }
         switch mood {
         case .focused: return .blue.opacity(0.9)
         case .relaxing: return .green.opacity(0.9)

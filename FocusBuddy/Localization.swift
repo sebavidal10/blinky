@@ -56,6 +56,8 @@ class Localization {
     static var of: String { at("of", "de") }
     static var showBuddy: String { at("Show Buddy", "Mostrar Buddy") }
     static var lightingEffect: String { at("Lighting Effect", "Efecto de Iluminación") }
+    static var insomniaMode: String { at("Insomnia Mode", "Modo Insomnio") }
+    static var insomniaDescription: String { at("Keep computer awake", "Mantener equipo despierto") }
     
     // Alerts
     static var quitTitle: String { at("Are you sure you want to quit?", "¿Estás seguro que deseas salir?") }

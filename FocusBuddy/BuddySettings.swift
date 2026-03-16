@@ -31,6 +31,13 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(enableDNDSync, forKey: "enableDNDSync") }
     }
 
+    @Published var isInsomniaEnabled: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isInsomniaEnabled, forKey: "isInsomniaEnabled")
+            InsomniaManager.shared.updateState(enabled: isInsomniaEnabled)
+        }
+    }
+
     @Published var launchAtLogin: Bool = false {
         didSet {
             do {
@@ -56,6 +63,7 @@ class BuddySettings: ObservableObject {
         isBuddyVisible = UserDefaults.standard.object(forKey: "isBuddyVisible") as? Bool ?? true
         showAura = UserDefaults.standard.object(forKey: "showAura") as? Bool ?? true
         enableDNDSync = UserDefaults.standard.bool(forKey: "enableDNDSync")
+        isInsomniaEnabled = false // Always off by default on app start as requested
         
         if let langString = UserDefaults.standard.string(forKey: "appLanguage"),
            let lang = AppLanguage(rawValue: langString) {

@@ -263,8 +263,6 @@ class PomodoroTimer: ObservableObject {
     }
 
     private func advancePhase() {
-        let previousPhase = phase
-        
         switch phase {
         case .working:
             completedSessions    += 1

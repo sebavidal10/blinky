@@ -301,6 +301,12 @@ struct MenuBarView: View {
                 ))
 
                 AppearanceToggle(title: Localization.lightingEffect, icon: buddySettings.showAura ? "sun.max.fill" : "sun.max", isOn: $buddySettings.showAura)
+
+                AppearanceToggle(
+                    title: Localization.insomniaMode,
+                    icon: buddySettings.isInsomniaEnabled ? "bolt.fill" : "bolt",
+                    isOn: $buddySettings.isInsomniaEnabled
+                )
             }
             .padding(14)
             .background(Color.primary.opacity(0.03))
@@ -388,6 +394,7 @@ struct AppearanceToggle: View {
             }
         }
         .toggleStyle(.switch)
+        .tint(.green)
         .controlSize(.small)
     }
 }
