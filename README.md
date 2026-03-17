@@ -1,42 +1,64 @@
-# FocusBuddy
+# Blinky ⚡️
 
-A premium Pomodoro timer for macOS with a desktop companion. FocusBuddy lives in your menu bar and features a floating robot friend ("Blinky") that reacts to your focus sessions and provides smart reminders.
+A premium session tracker for macOS with a desktop companion. Blinky lives in your menu bar and features a floating robot friend that reacts to your work sessions and meetings, with smart calendar integration.
 
 ## 🚀 Key Features
 
-- **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Relaxing, Celebrating) and natural blinking animations.
-- **⚡️ Integrated Insomnia Mode**: Prevents your Mac from sleeping with a single toggle. Perfect for long downloads, presentations, or deep focus sessions without system interruptions.
-- **☕️ Caffeine Visual State**: When Insomnia Mode is active, Blinky enters a "Caffeine Mode" with distinct amber eyes, providing a subtle and integrated status indicator.
-- **🌙 Automatic Focus Mode**: Seamlessly syncs macOS "Do Not Disturb" with your work sessions using AppleScript automation.
-- **📈 Productivity Stats**: Track your daily progress, total sessions, and maintain focus streaks with an automated midnight reset.
-- **🧠 Smart Reminders**: Context-aware productivity tips and postural reminders (e.g., "Take a deep breath", "Stay hydrated").
-- **⚙️ Premium Customization**: Adjustable focus/break durations, long break cycles, and buddy appearance (opacity, lighting effects).
-- **🔋 Native Performance**: Built with SwiftUI and AppKit for maximum performance, minimal resource usage, and a premium macOS feel.
+- **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Celebrating) and natural blinking animations.
+- **⏱️ Infinite Work Sessions**: Open-ended stopwatch sessions with no time limit - you decide when to finish.
+- **📅 Calendar Integration**: Sync with macOS Calendar to automatically detect meetings for Today and Tomorrow.
+- **📁 Grouped Meetings**: Clear visual separation between Today's and Tomorrow's events with smart iconography (video for meetings, calendar for events).
+- **⚙️ Reorganized Settings**: Intuitive layout with General, Appearance, and Calendars sections for better navigation.
+- **⭕️ Progress Ring**: Visual progress indicator around Blinky only appears during calendar meetings.
+- **💬 Smart Reminders**: Blinky shows contextual motivational messages during active sessions.
+- **⚡️ Integrated Insomnia Mode**: Prevents your Mac from sleeping with a single toggle.
+- **📈 Historial (History)**: Track your daily progress with a filtered session list. Navigate by date using arrows or a calendar picker, and quickly return to today with the "Hoy" shortcut.
+- **📜 Detailed Session Cards**: Each session shows your goal, start time, and duration in a clean 2-line layout.
+- **🗑 Session Management**: Delete individual sessions directly from the history list.
+- **🌐 Bilingual**: Full English and Spanish localization.
+- **🔋 Native Performance**: Built with SwiftUI and AppKit for maximum performance and minimal resource usage.
 
 ## 🛠 Technology Stack
 
 - **Swift & SwiftUI**: Core app logic and modern user interface.
 - **AppKit**: Status bar integration (`NSStatusItem`) and floating companion window.
+- **EventKit**: macOS Calendar integration for meeting-aware sessions with debounced fetching.
 - **Combine**: Reactive state management and optimized event observation.
 - **IOKit (pwr_mgt)**: Power management assertions for the Insomnia Mode.
-- **AppleScript**: System automation for macOS Focus Mode synchronization.
 - **ServiceManagement**: Modern login item management (`SMAppService`).
 
 ## 📂 Project Structure
 
 ```
-FocusBuddy/
-├── AppDelegate.swift        # App lifecycle, menu bar & popover management
-├── PomodoroTimer.swift      # Core timer engine, stats, and phase logic
-├── BuddySettings.swift      # Global configuration and persistence
-├── InsomniaManager.swift    # Power management for sleep prevention
-├── DNDManager.swift         # macOS Focus Mode automation bridge
-├── BuddyView.swift          # Blinky's UI, animations, and "Caffeine Mode"
-├── MenuBarView.swift        # Main popover interface and session controls
-├── SettingsView.swift       # Detailed configuration preferences
-├── Localization.swift       # Full English & Spanish support
-└── StatsView.swift         # Achievements and session history
+Blinky/
+├── BlinkyApp.swift            # App entry point
+├── AppDelegate.swift          # App lifecycle, menu bar & popover management
+├── SessionManager.swift      # Core session engine, stats, timer logic & persistence
+├── CalendarManager.swift     # macOS Calendar integration with debounced fetching
+├── BuddySettings.swift        # Global configuration and persistence
+├── InsomniaManager.swift      # Power management for sleep prevention
+├── BuddyView.swift           # Blinky's UI, animations, smart reminders & moods
+├── MenuBarView.swift         # Main popover interface and session controls
+├── SettingsView.swift        # Detailed configuration preferences
+├── StatsView.swift           # Historial (session history and date navigation)
+├── Localization.swift        # Full English & Spanish support
+└── UIComponents.swift        # Reusable UI components
+
+BlinkyTests/
+└── SessionManagerTests.swift  # Unit tests for session logic
 ```
+
+## 🧪 Testing
+
+The app includes unit tests covering:
+- Session state management (idle, working, meeting)
+- Infinite vs time-limited sessions
+- Timer controls (start, stop, pause, resume, reset)
+- Session persistence and history
+- Time formatting and progress calculations
+- Day reset and streak logic
+
+Run tests with `Cmd+U` in Xcode.
 
 ## 📋 Requirements
 

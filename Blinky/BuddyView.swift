@@ -8,7 +8,7 @@ import SwiftUI
 import Combine
 
 struct BuddyView: View {
-    @EnvironmentObject var timer: PomodoroTimer
+    @EnvironmentObject var timer: SessionManager
     @ObservedObject var buddySettings = BuddySettings.shared
     @State private var floatOffset: CGFloat = 0
     @State private var isHovering: Bool = false
@@ -32,7 +32,11 @@ struct BuddyView: View {
                     }
 
                     // NATIVE ROBOT FACE
-                    RobotFace(mood: timer.mood, isBlinking: blinkScale < 1.0, isInsomniaActive: buddySettings.isInsomniaEnabled)
+                    RobotFace(mood: timer.mood, 
+                              isRunning: timer.isRunning, 
+                              phase: timer.phase,
+                              isBlinking: blinkScale < 1.0, 
+                              isInsomniaActive: buddySettings.isInsomniaEnabled)
                         .frame(width: 90, height: 90)
                         .offset(y: floatOffset + 8) // Centralized offset
                         .scaleEffect(isHovering ? 1.05 : 1.0)
@@ -48,15 +52,15 @@ struct BuddyView: View {
                         )
                     
                     // Orbital Progress Ring (Integrated)
-                    if timer.phase != .idle {
+                    if timer.phase != .idle && !timer.isMeetingPending {
                         ZStack {
                             Circle()
                                 .stroke(Color.white.opacity(0.08), lineWidth: 3)
                             
                             Circle()
-                                .trim(from: 0, to: timer.progress)
+                                .trim(from: 0, to: max(0.001, timer.progress))
                                 .stroke(progressColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                                .rotationEffect(.degrees(-90 + timer.progress * 360))
+                                .rotationEffect(.degrees(-90))
                         }
                         .frame(width: 130, height: 130)
                         .animation(.linear(duration: 1), value: timer.progress)
@@ -81,7 +85,7 @@ struct BuddyView: View {
             .accessibilityElement(children: .combine)
             .accessibilityLabel(Localization.buddyAccessibilityLabel)
             .accessibilityValue(Localization.buddyAccessibilityValue(
-                phase: timer.phase == .working ? Localization.phaseFocus : Localization.phaseShortBreak,
+                phase: timer.phase == .meeting ? Localization.settingsCalendars : (timer.phase == .working ? Localization.phaseFocus : Localization.phaseShortBreak),
                 time: timer.timeString
             ))
             
@@ -92,6 +96,7 @@ struct BuddyView: View {
         .onAppear {
             startAnimations()
             startBlinking()
+            checkFirstLaunchGreeting()
         }
         .onChange(of: timer.phase) { _, newValue in
             updateSmartReminder(for: newValue)
@@ -101,7 +106,6 @@ struct BuddyView: View {
     var auraColor: Color {
         switch timer.mood {
         case .focused:     return .blue
-        case .relaxing:    return .green
         case .celebrating: return .orange
         case .idle:        return .white
         }
@@ -109,10 +113,9 @@ struct BuddyView: View {
 
     var progressColor: Color {
         switch timer.phase {
-        case .working:   return .blue.opacity(0.8)
-        case .breakTime: return .green.opacity(0.8)
-        case .longBreak: return .cyan.opacity(0.8)
-        case .idle:      return .gray.opacity(0.8)
+        case .working: return .blue.opacity(0.8)
+        case .meeting: return (timer.isMeetingPending ? Color.secondary : Color.teal).opacity(0.8)
+        case .idle:    return .gray.opacity(0.8)
         }
     }
 
@@ -123,50 +126,77 @@ struct BuddyView: View {
     }
 
     func startBlinking() {
-        // More natural random blinking
         let interval = Double.random(in: 3...7)
         DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
+            self.blink()
+        }
+    }
+    
+    private func blink() {
+        withAnimation(.easeInOut(duration: 0.08)) {
+            blinkScale = 0.1
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
             withAnimation(.easeInOut(duration: 0.08)) {
-                blinkScale = 0.1
+                self.blinkScale = 1.0
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-                withAnimation(.easeInOut(duration: 0.08)) {
-                    blinkScale = 1.0
-                }
-                startBlinking()
-            }
+            self.startBlinking()
         }
     }
 
     private func updateSmartReminder(for phase: TimerPhase) {
         switch phase {
-        case .breakTime, .longBreak:
-            let recoveryProtocols = [
-                Localization.reminderDeepBreath,
-                Localization.reminderStretchBack,
-                Localization.reminderDrinkWater,
-                Localization.reminderLookAway,
-                Localization.reminderTeaCoffee
-            ]
-            smartReminder = recoveryProtocols.randomElement()
-            
-        case .working:
-            let focusProtocols = [
-                Localization.reminderShouldersRelaxed,
-                Localization.reminderKeepItUp,
-                Localization.reminderStayHydrated,
-                Localization.reminderZeroDistractions
-            ]
-            // Show a focus tip briefly at start of work
-            smartReminder = focusProtocols.randomElement()
-            
+        case .working, .meeting:
+            scheduleRandomReminder()
         case .idle:
-            smartReminder = Localization.reminderReadyFocus
+            smartReminder = nil
         }
+    }
+    
+    private func scheduleRandomReminder() {
+        let interval = Double.random(in: 120...300)
+        DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
+            guard SessionManager.shared.isRunning,
+                  SessionManager.shared.phase != .idle else { return }
+            
+            self.showRandomReminder()
+            self.scheduleRandomReminder()
+        }
+    }
+    
+    private func showRandomReminder() {
+        let reminders = [
+            Localization.reminderDeepBreath,
+            Localization.reminderStretchBack,
+            Localization.reminderDrinkWater,
+            Localization.reminderLookAway,
+            Localization.reminderShouldersRelaxed,
+            Localization.reminderKeepItUp,
+            Localization.reminderStayHydrated,
+            Localization.reminderZeroDistractions,
+            Localization.reminderReadyFocus
+        ]
+        
+        let randomReminder = reminders.randomElement() ?? Localization.reminderKeepItUp
+        
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            smartReminder = randomReminder
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            withAnimation { self.smartReminder = nil }
+        }
+    }
 
-        // Hide after 7 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
-            withAnimation { smartReminder = nil }
+    private func checkFirstLaunchGreeting() {
+        let hasGreeted = UserDefaults.standard.bool(forKey: "hasGreetedUser")
+        if !hasGreeted {
+            smartReminder = Localization.at("Hello! I'm Blinky ⚡️", "¡Hola! Soy Blinky ⚡️")
+            UserDefaults.standard.set(true, forKey: "hasGreetedUser")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                withAnimation { smartReminder = nil }
+            }
         }
     }
 }
@@ -208,6 +238,8 @@ struct MessageBubble: View {
 
 struct RobotFace: View {
     let mood: PetMood
+    let isRunning: Bool
+    let phase: TimerPhase
     let isBlinking: Bool
     var isInsomniaActive: Bool = false
     
@@ -241,7 +273,7 @@ struct RobotFace: View {
                 .shadow(inner: .black.opacity(0.6), radius: 3)
             
             // Interaction: Eyes or PAUSE text
-            if !PomodoroTimer.shared.isRunning && PomodoroTimer.shared.phase != .idle {
+            if !isRunning && phase != .idle {
                 Text(Localization.pauseLabel.uppercased())
                     .font(.system(size: 10, weight: .black))
                     .foregroundColor(statusColor)
@@ -272,7 +304,6 @@ struct RobotFace: View {
     var statusColor: Color {
         switch mood {
         case .focused: return .blue
-        case .relaxing: return .green
         case .celebrating: return .orange
         case .idle: return .white
         }
@@ -334,12 +365,6 @@ struct Eye: View {
                         .fill(eyeColor)
                         .frame(width: 12, height: 4)
                 
-                case .relaxing:
-                    // Soft circles
-                    Circle()
-                        .fill(eyeColor)
-                        .frame(width: 10, height: 10)
-                
                 case .idle:
                     // Soft circular eyes for a friendlier "ready" look
                     Circle()
@@ -355,7 +380,6 @@ struct Eye: View {
         if isInsomniaActive { return .orange }
         switch mood {
         case .focused: return .blue.opacity(0.9)
-        case .relaxing: return .green.opacity(0.9)
         case .celebrating: return .orange.opacity(0.9)
         case .idle: return .white.opacity(0.8)
         }

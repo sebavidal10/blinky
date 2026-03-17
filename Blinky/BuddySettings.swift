@@ -27,9 +27,10 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(appLanguage.rawValue, forKey: "appLanguage") }
     }
 
-    @Published var enableDNDSync: Bool = false {
-        didSet { UserDefaults.standard.set(enableDNDSync, forKey: "enableDNDSync") }
+    @Published var preferredBrowser: String = "System Default" {
+        didSet { UserDefaults.standard.set(preferredBrowser, forKey: "preferredBrowser") }
     }
+
 
     @Published var isInsomniaEnabled: Bool = false {
         didSet {
@@ -62,7 +63,6 @@ class BuddySettings: ObservableObject {
 
         isBuddyVisible = UserDefaults.standard.object(forKey: "isBuddyVisible") as? Bool ?? true
         showAura = UserDefaults.standard.object(forKey: "showAura") as? Bool ?? true
-        enableDNDSync = UserDefaults.standard.bool(forKey: "enableDNDSync")
         isInsomniaEnabled = false // Always off by default on app start as requested
         
         if let langString = UserDefaults.standard.string(forKey: "appLanguage"),
@@ -71,6 +71,8 @@ class BuddySettings: ObservableObject {
         } else {
             appLanguage = .spanish
         }
+
+        preferredBrowser = UserDefaults.standard.string(forKey: "preferredBrowser") ?? "System Default"
         
         // Sync launchAtLogin with system status
         launchAtLogin = SMAppService.mainApp.status == .enabled

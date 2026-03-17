@@ -28,9 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenuBarItem()
         setupPetWindow()
         
-        if !UserDefaults.standard.bool(forKey: "hasFinishedOnboarding") {
-            showOnboarding()
-        }
+        UserDefaults.standard.set(true, forKey: "hasFinishedOnboarding")
 
         setupVisibilityObservation()
         setupTimerObserver()
@@ -60,7 +58,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover?.behavior = .transient
         popover?.contentViewController = NSHostingController(
             rootView: MenuBarView()
-                .environmentObject(PomodoroTimer.shared)
+                .environmentObject(SessionManager.shared)
+                .environmentObject(CalendarManager.shared)
         )
     }
 
@@ -103,7 +102,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         petWindow?.isMovableByWindowBackground = true
         petWindow?.contentView = NSHostingView(
             rootView: BuddyView()
-                .environmentObject(PomodoroTimer.shared)
+                .environmentObject(SessionManager.shared)
+                .environmentObject(CalendarManager.shared)
         )
         
         if BuddySettings.shared.isBuddyVisible {
@@ -112,17 +112,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupTimerObserver() {
-        PomodoroTimer.shared.$secondsRemaining
-            .removeDuplicates()
-            .combineLatest(
-                PomodoroTimer.shared.$isRunning.removeDuplicates(),
-                PomodoroTimer.shared.$phase.removeDuplicates()
-            )
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _, isRunning, phase in
-                self?.updateStatusItemTitle(isRunning: isRunning, phase: phase)
-            }
-            .store(in: &cancellables)
+        Publishers.CombineLatest4(
+            SessionManager.shared.$secondsRemaining.removeDuplicates(),
+            SessionManager.shared.$secondsElapsed.removeDuplicates(),
+            SessionManager.shared.$isRunning.removeDuplicates(),
+            SessionManager.shared.$phase.removeDuplicates()
+        )
+        .receive(on: RunLoop.main)
+        .sink { [weak self] _, _, isRunning, phase in
+            self?.updateStatusItemTitle(isRunning: isRunning, phase: phase)
+        }
+        .store(in: &cancellables)
     }
 
     private func updateStatusItemTitle(isRunning: Bool, phase: TimerPhase) {
@@ -134,7 +134,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         button?.attributedTitle = NSAttributedString(string: "")
 
         if phase != .idle {
-            let title = PomodoroTimer.shared.timeString
+            let title = SessionManager.shared.timeString
             
             let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
             let attrs: [NSAttributedString.Key: Any] = [
@@ -150,8 +150,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.updateStatusItemTitle(
-                    isRunning: PomodoroTimer.shared.isRunning,
-                    phase: PomodoroTimer.shared.phase
+                    isRunning: SessionManager.shared.isRunning,
+                    phase: SessionManager.shared.phase
                 )
             }
             .store(in: &cancellables)
@@ -170,25 +170,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .store(in: &cancellables)
     }
 
-    func showOnboarding() {
-        let onboardingWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 450),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-        onboardingWindow.center()
-        onboardingWindow.titleVisibility = .hidden
-        onboardingWindow.titlebarAppearsTransparent = true
-        onboardingWindow.isMovableByWindowBackground = true
-        onboardingWindow.contentView = NSHostingView(
-            rootView: OnboardingView()
-                .environmentObject(PomodoroTimer.shared)
-        )
-        
-        NSApp.activate(ignoringOtherApps: true)
-        onboardingWindow.makeKeyAndOrderFront(nil)
-    }
 
     @objc func showSettings() {
         togglePopover()
@@ -199,10 +180,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        // Ensure DND is turned off if the app is closed during a session
-        if BuddySettings.shared.enableDNDSync {
-            DNDManager.shared.setDND(enabled: false)
-        }
+        // App cleanup
     }
 
     private func setupWakeObservation() {
@@ -215,6 +193,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func handleWake() {
-        PomodoroTimer.shared.checkDayReset()
+        SessionManager.shared.checkDayReset()
     }
 }

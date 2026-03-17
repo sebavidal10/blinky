@@ -1,6 +1,6 @@
 //
 //  InsomniaManager.swift
-//  FocusBuddy
+//  Blinky
 //
 //  Created by Sebastián Vidal Aedo on 14-03-26.
 //
@@ -27,7 +27,7 @@ class InsomniaManager {
     private func enable() {
         guard !isActive else { return }
         
-        let reason = "FocusBuddy Insomnia Mode" as CFString
+        let reason = "Blinky Insomnia Mode" as CFString
         let result = IOPMAssertionCreateWithName(
             kIOPMAssertionTypeNoDisplaySleep as CFString,
             IOPMAssertionLevel(kIOPMAssertionLevelOn),

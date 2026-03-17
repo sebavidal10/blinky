@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Blinky needs access to your calendar to show your upcoming meetings.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Blinky needs full access to your calendar to show and manage your meetings.</string>
+</dict>
+</plist>

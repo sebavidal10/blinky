@@ -34,9 +34,17 @@ class Localization {
         return resolvedLanguage == "es" ? es : en
     }
     
-    // MARK: - Strings Cabinet
+    static var unnamedSession: String { at("Unnamed Session", "Sesión sin nombre") }
+    static var aboutTitle: String { at("About Blinky", "Acerca de Blinky") }
+    static var aboutVersion: String { at("Version 1.0", "Versión 1.0") }
+    static var aboutCopyright: String { at("© 2026 Sebastián Vidal", "© 2026 Sebastián Vidal") }
+    static var aboutHelp: String { at("Technical Information", "Información técnica") }
     
-    static var appName: String { at("FocusBuddy", "FocusBuddy") }
+    static var startWork: String { at("Start Working", "Iniciar trabajo") }
+    static var infiniteSession: String { at("Open session (Stopwatch)", "Sesión abierta (Cronómetro)") }
+    static var upcomingMeetings: String { at("Upcoming meetings", "Próximas reuniones") }
+    
+    static var appName: String { at("Blinky", "Blinky") }
     
     // MenuBar
     static var today: String { at("Today", "Hoy") }
@@ -47,7 +55,7 @@ class Localization {
     static var newSession: String { at("New Session", "Nueva Sesión") }
     static var whatIsYourGoal: String { at("What is your goal?", "¿Cuál es tu objetivo?") }
     static var start: String { at("Start", "Comenzar") }
-    static var pauseLabel: String { at("Pause", "Pausar") }
+    static var pauseLabel: String { at("Pause", "Pausa") }
     static var continueLabel: String { at("Continue", "Continuar") }
     static var endCycle: String { at("End Cycle", "Terminar Ciclo") }
     static var finishSession: String { at("Finish session", "Finalizar sesión") }
@@ -61,7 +69,7 @@ class Localization {
     
     // Alerts
     static var quitTitle: String { at("Are you sure you want to quit?", "¿Estás seguro que deseas salir?") }
-    static var quitButton: String { at("Quit FocusBuddy", "Salir de FocusBuddy") }
+    static var quitButton: String { at("Quit Blinky", "Salir de Blinky") }
     static var cancelButton: String { at("Cancel", "Cancelar") }
     static var quitMessage: String { at("The progress of the current session will be lost.", "Se perderá el progreso de la sesión actual.") }
     
@@ -83,27 +91,43 @@ class Localization {
     static var phaseLongBreak: String { at("Long break", "Descanso largo") }
     
     // Stats
-    static var achievements: String { at("Achievements", "Mis Logros") }
+    static var achievements: String { at("History", "Historial") }
     static var statToday: String { at("Today", "Hoy") }
     static var statTotal: String { at("Total", "Total") }
     static var statStreak: String { at("Streak", "Racha") }
-    static var recentHistory: String { at("RECENT HISTORY", "HISTORIAL RECIENTE") }
-    static var noSessions: String { at("No sessions recorded yet.\nStart your first pomodoro!", "Aún no hay sesiones registradas.\n¡Empieza tu primer pomodoro!") }
-    static var unnamedSession: String { at("Unnamed Session", "Sesión sin nombre") }
+    static var recentHistory: String { at("SESSIONS", "SESIONES") }
+    static var noSessions: String { at("No sessions recorded yet.\nStart your first session!", "Aún no hay sesiones registradas.\n¡Empieza tu primera sesión!") }
     
     // Settings
     static var settingsTimer: String { at("Timer", "Temporizador") }
     static var settingsGeneral: String { at("General", "General") }
+    static var settingsAppearance: String { at("Appearance", "Apariencia") }
     static var settingsCycles: String { at("Cycles", "Ciclos") }
     static var launchAtLogin: String { at("Launch at login", "Abrir al iniciar sesión") }
-    static var autoDND: String { at("Automatic Do Not Disturb", "No Molestar automático") }
     static var sessionsBeforeLongBreak: String { at("Sessions before long break", "Sesiones antes del descanso largo") }
     static var settingsLanguage: String { at("Language", "Idioma") }
+    static var settingsCalendars: String { at("Calendars", "Calendarios") }
+    static var readCalendars: String { at("Read meetings from:", "Leer reuniones de:") }
+    static var grantAccess: String { at("Grant Calendar Access", "Permitir acceso al Calendario") }
+    static var openSystemSettings: String { at("Open System Settings", "Abrir Ajustes del Sistema") }
+    static var calendarAccessDenied: String { at("Blinky needs calendar access to show your meetings.", "Blinky necesita acceso al calendario para mostrar tus reuniones.") }
+    static var defaultBrowser: String { at("Default Browser", "Navegador predeterminado") }
+    static var selectBrowser: String { at("Open links with:", "Abrir enlaces con:") }
+    static var syncNow: String { at("Sync Now", "Sincronizar ahora") }
+    static var noEventsToday: String { at("No events today", "Ningún evento hoy") }
+    static var noEventsTomorrow: String { at("No events tomorrow", "Ningún evento mañana") }
+    static var noEventsNext2Days: String { at("No events scheduled for the next 2 days", "Ningún evento programado en los próximos 2 días") }
+    static var todayLabel: String { at("Today", "Hoy") }
+    static var tomorrowLabel: String { at("Tomorrow", "Mañana") }
+    static var settingsGeneralAppearance: String { at("General & Appearance", "General y Apariencia") }
+    
+    static func remainingTime(_ minutes: Int) -> String {
+        return at("\(minutes) min remaining", "\(minutes) min restantes")
+    }
     
     // Pet Moods
     static var moodIdle: String { at("Ready to work", "Listo para trabajar") }
     static var moodFocused: String { at("Focused...", "Concentrado...") }
-    static var moodRelaxing: String { at("Taking a break", "Tomando un respiro") }
     static var moodCelebrating: String { at("Great session!", "¡Gran sesión!") }
     
     // Notifications
@@ -129,17 +153,17 @@ class Localization {
     }
     
     // Onboarding
-    static var obTitle1: String { at("FocusBuddy Pro", "FocusBuddy Pro") }
+    static var obTitle1: String { at("Blinky Pro", "Blinky Pro") }
     static var obDesc1: String { at("Your minimalist productivity companion. Designed to live on your desktop without distracting.", "Tu compañero de productividad minimalista. Diseñado para vivir en tu escritorio sin distraer.") }
     
-    static var obTitle2: String { at("Focus with Pomodoro", "Enfócate con Pomodoro") }
-    static var obDesc2: String { at("Work in blocks of 25 minutes. The Buddy reacts subtly to your progress.", "Trabaja en bloques de 25 minutos. El Buddy reacciona sutilmente a tu progreso.") }
+    static var obTitle2: String { at("Focus with Blinky", "Enfócate con Blinky") }
+    static var obDesc2: String { at("Track your work sessions with a stopwatch or sync with your calendar for meetings.", "Rastrea tus sesiones de trabajo con un cronómetro o sincroniza con tu calendario para reuniones.") }
     
     static var obTitle3: String { at("Total Control", "Control Total") }
     static var obDesc3: String { at("Hide the Buddy when you need space or move it freely using the top handle.", "Oculta el Buddy cuando necesites espacio o muévelo libremente usando el tirador superior.") }
     
     static var obTitle4: String { at("Privacy First", "Privacidad Primero") }
-    static var obDesc4: String { at("No keyboard or mouse monitoring. FocusBuddy only depends on your timer.", "Sin monitoreo de teclado ni mouse. FocusBuddy solo depende de tu temporizador.") }
+    static var obDesc4: String { at("Blinky only depends on your sessions. No tracking, no data sent, just deep focus.", "Blinky solo depende de tus sesiones. Sin rastreo, sin datos enviados, solo enfoque profundo.") }
     
     static var next: String { at("Next", "Siguiente") }
     static var getStarted: String { at("Get Started!", "¡Empezar!") }
