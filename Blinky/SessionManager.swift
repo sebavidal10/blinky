@@ -47,6 +47,7 @@ class SessionManager: ObservableObject {
     @Published var meetingHasLink: Bool = false
     @Published var meetingCountdown: String? = nil
     @Published var upcomingMeeting: EKEvent? = nil
+    @Published var discardedMeetingIDs: Set<String> = []
 
     // MARK: - State
     @Published var phase: TimerPhase = .idle
@@ -81,6 +82,10 @@ class SessionManager: ObservableObject {
     // MARK: - Init
 
     private init() {
+        if let savedDiscarded = UserDefaults.standard.stringArray(forKey: "discardedMeetingIDs") {
+            discardedMeetingIDs = Set(savedDiscarded)
+        }
+        
         loadHistory()
         requestNotificationPermission()
         checkDayReset()
@@ -105,6 +110,9 @@ class SessionManager: ObservableObject {
             }
             
             totalSessionsToday = 0
+            discardedMeetingIDs.removeAll()
+            UserDefaults.standard.removeObject(forKey: "discardedMeetingIDs")
+            
             ud.set(Date(), forKey: "lastActiveDate")
         }
     }
@@ -245,6 +253,9 @@ class SessionManager: ObservableObject {
         )
         sessionsHistory.append(session)
         
+        discardedMeetingIDs.insert(event.eventIdentifier)
+        UserDefaults.standard.set(Array(discardedMeetingIDs), forKey: "discardedMeetingIDs")
+        
         if upcomingMeeting?.eventIdentifier == event.eventIdentifier {
             upcomingMeeting = nil
             meetingCountdown = nil
@@ -327,7 +338,7 @@ class SessionManager: ObservableObject {
         
         // Find the next meeting starting in the future
         let next = calendar.todayEvents
-            .filter { $0.startDate > now && !$0.isAllDay }
+            .filter { $0.startDate > now && !$0.isAllDay && !discardedMeetingIDs.contains($0.eventIdentifier) }
             .sorted { $0.startDate < $1.startDate }
             .first
         
