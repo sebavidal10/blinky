@@ -4,17 +4,21 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 
 ## 🚀 Key Features
 
-- **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Celebrating) and natural blinking animations.
-- **⏱️ Infinite Work Sessions**: Open-ended stopwatch sessions with no time limit - you decide when to finish.
-- **📅 Calendar Integration**: Sync with macOS Calendar to automatically detect meetings for Today and Tomorrow.
-- **📁 Grouped Meetings**: Clear visual separation between Today's and Tomorrow's events with smart iconography (video for meetings, calendar for events).
-- **⚙️ Reorganized Settings**: Intuitive layout with General, Appearance, and Calendars sections for better navigation.
+- **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Celebrating). **Imminent meetings** (selector for 5, 10, 15 mins) are displayed on his eyes with an orange countdown. **Contextual icons** (video, calendar, bolt) appear on his face to show the current activity type.
+- **⏱️ Infinite Work Sessions**: Open-ended stopwatch sessions with no time limit.
+- **📅 Smart Meeting Alerts**: Automatically detects upcoming meetings and provides a **Discard** option to skip and log them.
+- **📁 Grouped Meetings**: Clear visual separation for Today/Tomorrow with **engaging empty states**.
+- **💎 Premium UI Consistency**: Normalized headers across all sections for a more professional and seamless experience.
+- **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, **Data Management** (JSON Export/Import), Buddy Config, and Calendars.
+ Browser and Calendar selection are now integrated into the main **Settings** view, avoiding redundant navigation.
+- **🔄 Robust Sync Now**: The "Sync Now" button forces a re-read of all calendar sources (iCloud, Google Calendar, etc.) with a smooth **rotation animation** for visual feedback.
 - **⭕️ Progress Ring**: Visual progress indicator around Blinky only appears during calendar meetings.
 - **💬 Smart Reminders**: Blinky shows contextual motivational messages during active sessions.
-- **⚡️ Integrated Insomnia Mode**: Prevents your Mac from sleeping with a single toggle.
-- **📈 Historial (History)**: Track your daily progress with a filtered session list. Navigate by date using arrows or a calendar picker, and quickly return to today with the "Hoy" shortcut.
+- **⚡️ Integrated Insomnia Mode**: Prevents your Mac from sleeping with a single toggle. Now **enabled by default** on app launch.
+- **📈 Historial (History)**: Track your daily progress with a filtered session list...
 - **📜 Detailed Session Cards**: Each session shows your goal, start time, and duration in a clean 2-line layout.
-- **🗑 Session Management**: Delete individual sessions directly from the history list.
+- **📝 Quick Notes**: Jot down thoughts instantly from the Buddy's floating UI or manage them in the dedicated **Notes** tab in the menu bar.
+- **🗑 Session & Note Management**: Delete individual sessions or notes directly from their respective lists.
 - **🌐 Bilingual**: Full English and Spanish localization.
 - **🔋 Native Performance**: Built with SwiftUI and AppKit for maximum performance and minimal resource usage.
 
@@ -34,14 +38,18 @@ Blinky/
 ├── BlinkyApp.swift            # App entry point
 ├── AppDelegate.swift          # App lifecycle, menu bar & popover management
 ├── SessionManager.swift      # Core session engine, stats, timer logic & persistence
+├── NotesManager.swift        # Quick notes engine and persistence
 ├── CalendarManager.swift     # macOS Calendar integration with debounced fetching
 ├── BuddySettings.swift        # Global configuration and persistence
 ├── InsomniaManager.swift      # Power management for sleep prevention
 ├── BuddyView.swift           # Blinky's UI, animations, smart reminders & moods
-├── MenuBarView.swift         # Main popover interface and session controls
-├── SettingsView.swift        # Detailed configuration preferences
+├── MenuBarView.swift         # Main popover interface and notes integration
+├── SettingsView.swift        # Unified configuration (General, Browser, Calendars)
 ├── StatsView.swift           # Historial (session history and date navigation)
+├── NotesView.swift           # Quick notes list and management
 ├── Localization.swift        # Full English & Spanish support
+├── SyncIcon.swift            # Reusable robust rotation animation component
+├── DataPortalManager.swift   # JSON Export/Import engine for settings & history
 └── UIComponents.swift        # Reusable UI components
 
 BlinkyTests/

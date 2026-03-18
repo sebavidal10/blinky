@@ -31,6 +31,10 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(preferredBrowser, forKey: "preferredBrowser") }
     }
 
+    @Published var meetingCountdownThreshold: Int = 5 {
+        didSet { UserDefaults.standard.set(meetingCountdownThreshold, forKey: "meetingCountdownThreshold") }
+    }
+
 
     @Published var isInsomniaEnabled: Bool = false {
         didSet {
@@ -63,7 +67,8 @@ class BuddySettings: ObservableObject {
 
         isBuddyVisible = UserDefaults.standard.object(forKey: "isBuddyVisible") as? Bool ?? true
         showAura = UserDefaults.standard.object(forKey: "showAura") as? Bool ?? true
-        isInsomniaEnabled = false // Always off by default on app start as requested
+        isInsomniaEnabled = true
+        InsomniaManager.shared.updateState(enabled: true)
         
         if let langString = UserDefaults.standard.string(forKey: "appLanguage"),
            let lang = AppLanguage(rawValue: langString) {
@@ -74,7 +79,35 @@ class BuddySettings: ObservableObject {
 
         preferredBrowser = UserDefaults.standard.string(forKey: "preferredBrowser") ?? "System Default"
         
+        let savedThreshold = UserDefaults.standard.integer(forKey: "meetingCountdownThreshold")
+        meetingCountdownThreshold = savedThreshold > 0 ? savedThreshold : 5
+        
         // Sync launchAtLogin with system status
         launchAtLogin = SMAppService.mainApp.status == .enabled
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: NSNotification.Name("BlinkyDataImported"), object: nil)
+    }
+    
+    @objc func reloadData() {
+        let savedOpacity = UserDefaults.standard.double(forKey: "buddyOpacity")
+        if savedOpacity > 0 { 
+            buddyOpacity = savedOpacity 
+        }
+        
+        isBuddyVisible = UserDefaults.standard.object(forKey: "isBuddyVisible") as? Bool ?? true
+        showAura = UserDefaults.standard.object(forKey: "showAura") as? Bool ?? true
+        isInsomniaEnabled = UserDefaults.standard.object(forKey: "isInsomniaEnabled") as? Bool ?? true
+        
+        if let langString = UserDefaults.standard.string(forKey: "appLanguage"),
+           let lang = AppLanguage(rawValue: langString) {
+            appLanguage = lang
+        }
+        
+        preferredBrowser = UserDefaults.standard.string(forKey: "preferredBrowser") ?? "System Default"
+        
+        let savedThreshold = UserDefaults.standard.integer(forKey: "meetingCountdownThreshold")
+        meetingCountdownThreshold = savedThreshold > 0 ? savedThreshold : 5
+        
+        InsomniaManager.shared.updateState(enabled: isInsomniaEnabled)
     }
 }

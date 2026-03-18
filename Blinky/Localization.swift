@@ -114,13 +114,19 @@ class Localization {
     static var defaultBrowser: String { at("Default Browser", "Navegador predeterminado") }
     static var selectBrowser: String { at("Open links with:", "Abrir enlaces con:") }
     static var syncNow: String { at("Sync Now", "Sincronizar ahora") }
-    static var noEventsToday: String { at("No events today", "Ningún evento hoy") }
-    static var noEventsTomorrow: String { at("No events tomorrow", "Ningún evento mañana") }
-    static var noEventsNext2Days: String { at("No events scheduled for the next 2 days", "Ningún evento programado en los próximos 2 días") }
+    static var noEventsToday: String { at("All set for today! 🚀", "¡Todo listo por hoy! 🚀") }
+    static var noEventsTomorrow: String { at("No events scheduled", "Sin eventos agendados") }
+    static var noEventsNext2Days: String { at("No events for today or tomorrow. Free days! ⚡️", "Sin eventos hoy ni mañana. ¡Días libres! ⚡️") }
     static var todayLabel: String { at("Today", "Hoy") }
     static var tomorrowLabel: String { at("Tomorrow", "Mañana") }
     static var settingsGeneralAppearance: String { at("General & Appearance", "General y Apariencia") }
+    static var settings: String { at("Settings", "Configuración") }
+    static var generalStartup: String { at("General & Startup", "General e Inicio") }
+    static var buddyConfiguration: String { at("Buddy Configuration", "Configuración de Buddy") }
     
+    static var countdownThreshold: String { at("Countdown", "Cuenta regresiva") }
+    static var minutesBefore: String { at("minutes before", "minutos antes") }
+
     static func remainingTime(_ minutes: Int) -> String {
         return at("\(minutes) min remaining", "\(minutes) min restantes")
     }
@@ -167,4 +173,10 @@ class Localization {
     
     static var next: String { at("Next", "Siguiente") }
     static var getStarted: String { at("Get Started!", "¡Empezar!") }
+    
+    // Quick Notes
+    static var notesTitle: String { at("Quick Notes", "Notas Rápidas") }
+    static var noNotes: String { at("No notes yet.\nJot down your thoughts!", "Aún no hay notas.\n¡Escribe tus pensamientos!") }
+    static var typeSomething: String { at("Type something and press Enter...", "Escribe algo y pulsa Enter...") }
+    static var quickNoteShortcut: String { at("New Note", "Nueva Nota") }
 }

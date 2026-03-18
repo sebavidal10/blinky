@@ -37,9 +37,6 @@ class InsomniaManager {
         
         if result == kIOReturnSuccess {
             isActive = true
-            print("Insomnia Mode: Enabled")
-        } else {
-            print("Insomnia Mode: Failed to enable (Error \(result))")
         }
     }
     
@@ -50,9 +47,6 @@ class InsomniaManager {
         if result == kIOReturnSuccess {
             isActive = false
             assertionID = 0
-            print("Insomnia Mode: Disabled")
-        } else {
-            print("Insomnia Mode: Failed to disable (Error \(result))")
         }
     }
 }

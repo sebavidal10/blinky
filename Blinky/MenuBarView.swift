@@ -20,8 +20,8 @@ struct MenuBarView: View {
 
     enum AppView {
         case timer
-        case calendarSettings
         case stats
+        case notes
         case settings
     }
 
@@ -31,12 +31,12 @@ struct MenuBarView: View {
             switch currentView {
             case .timer:
                 timerMainView
-            case .calendarSettings:
-                CalendarSettingsView()
-                    .environmentObject(timer)
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
             case .stats:
                 StatsView()
+                    .environmentObject(timer)
+                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+            case .notes:
+                NotesView()
                     .environmentObject(timer)
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
             case .settings:
@@ -55,12 +55,12 @@ struct MenuBarView: View {
                     currentView = .timer
                 }
 
-                TabButton(icon: "calendar", isSelected: currentView == .calendarSettings) {
-                    currentView = .calendarSettings
-                }
-
-                TabButton(icon: "chart.bar.fill", isSelected: currentView == .stats) {
+                TabButton(icon: "calendar", isSelected: currentView == .stats) {
                     currentView = .stats
+                }
+                
+                TabButton(icon: "square.and.pencil", isSelected: currentView == .notes) {
+                    currentView = .notes
                 }
 
                 TabButton(icon: "gearshape.fill", isSelected: currentView == .settings) {
@@ -100,19 +100,11 @@ struct MenuBarView: View {
     private var timerMainView: some View {
         VStack(spacing: 0) {
             // Header
-            HStack {
-                Text("Blinky")
-                    .font(.system(size: 14, weight: .bold))
-                Spacer()
+            ViewHeader(title: "Blinky", rightContent: {
                 Text("\(Localization.today): \(timer.totalSessionsToday) ⚡️")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
-
-            Divider()
+            })
 
             // Pet mood / Robot State
             HStack(spacing: 12) {
@@ -147,6 +139,55 @@ struct MenuBarView: View {
                 VStack(spacing: 0) {
                     // TOP SECTION: Status + Action/Active Session
                     VStack(spacing: 12) {
+                        if let event = timer.upcomingMeeting, let countdown = timer.meetingCountdown {
+                            // NEXT MEETING COUNTDOWN BANNER
+                            VStack(spacing: 8) {
+                                HStack(spacing: 12) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.orange.opacity(0.1))
+                                            .frame(width: 32, height: 32)
+                                        Image(systemName: "clock.badge.exclamationmark")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundColor(.orange)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(event.title)
+                                            .font(.system(size: 13, weight: .bold))
+                                            .lineLimit(1)
+                                        Text("\(Localization.at("Starts in", "Comienza en")) \(countdown)")
+                                            .font(.system(size: 11))
+                                            .foregroundColor(.orange)
+                                    }
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        withAnimation {
+                                            timer.discardMeeting(event: event)
+                                        }
+                                    }) {
+                                        Text(Localization.at("Discard", "Descartar"))
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 5)
+                                            .background(Color.red.opacity(0.8))
+                                            .cornerRadius(8)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .padding(12)
+                                .background(Color.orange.opacity(0.05))
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                                )
+                            }
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                        }
+
                         if timer.phase == .idle && !isPreparingSession {
                             // READY TO WORK - Action Button
                             Button(action: { 
@@ -311,47 +352,45 @@ struct MenuBarView: View {
                             
                             Spacer()
                             
-                            Button(action: { calendar.refresh() }) {
-                                if calendar.isFetching {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                        .scaleEffect(0.6)
-                                } else {
-                                    Image(systemName: "arrow.clockwise")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundColor(.secondary.opacity(0.6))
-                                }
+                            Button(action: { 
+                                calendar.refresh()
+                            }) {
+                                SyncIcon(isFetching: calendar.isFetching)
                             }
                             .buttonStyle(.plain)
                             .disabled(calendar.isFetching)
                         }
                         
                         ScrollView(showsIndicators: false) {
-                            if calendar.todayEvents.isEmpty && calendar.tomorrowEvents.isEmpty {
-                                Text(Localization.noEventsNext2Days)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.secondary.opacity(0.6))
-                                    .multilineTextAlignment(.center)
-                                    .padding(.vertical, 32)
-                                    .frame(maxWidth: .infinity)
-                            } else {
-                                VStack(alignment: .leading, spacing: 20) {
-                                    // Today
-                                    if !calendar.todayEvents.isEmpty {
+                            VStack(spacing: 0) {
+                                Color.clear.frame(height: 12)
+                                
+                                if calendar.todayEvents.isEmpty && calendar.tomorrowEvents.isEmpty {
+                                    Text(Localization.noEventsNext2Days)
+                                        .font(.system(size: 11))
+                                        .foregroundColor(.secondary.opacity(0.6))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.vertical, 32)
+                                        .frame(maxWidth: .infinity)
+                                } else {
+                                    VStack(alignment: .leading, spacing: 20) {
+                                        // Today
                                         VStack(alignment: .leading, spacing: 12) {
                                             Text(Localization.todayLabel)
                                                 .font(.system(size: 11, weight: .bold))
                                                 .foregroundColor(.secondary.opacity(0.5))
                                                 .padding(.leading, 2)
                                             
-                                            ForEach(calendar.todayEvents, id: \.self) { event in
-                                                EventRow(event: event, timer: timer)
+                                            if calendar.todayEvents.isEmpty {
+                                                EmptyDayMessage(message: Localization.noEventsToday)
+                                            } else {
+                                                ForEach(calendar.todayEvents, id: \.self) { event in
+                                                    EventRow(event: event, timer: timer)
+                                                }
                                             }
                                         }
-                                    }
-                                    
-                                    // Tomorrow
-                                    if !calendar.tomorrowEvents.isEmpty {
+                                        
+                                        // Tomorrow
                                         VStack(alignment: .leading, spacing: 12) {
                                             let tomorrowLabel: String = {
                                                 let formatter = DateFormatter()
@@ -366,13 +405,17 @@ struct MenuBarView: View {
                                                 .foregroundColor(.secondary.opacity(0.5))
                                                 .padding(.leading, 2)
                                             
-                                            ForEach(calendar.tomorrowEvents, id: \.self) { event in
-                                                EventRow(event: event, timer: timer)
+                                            if calendar.tomorrowEvents.isEmpty {
+                                                EmptyDayMessage(message: Localization.noEventsTomorrow)
+                                            } else {
+                                                ForEach(calendar.tomorrowEvents, id: \.self) { event in
+                                                    EventRow(event: event, timer: timer)
+                                                }
                                             }
                                         }
                                     }
+                                    .padding(.bottom, 16)
                                 }
-                                .padding(.bottom, 16)
                             }
                         }
                     }
@@ -399,6 +442,29 @@ struct MenuBarView: View {
 
     func handleMainButton() {
         timer.startStop()
+    }
+}
+
+struct EmptyDayMessage: View {
+    let message: String
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.green.opacity(0.4))
+                .font(.system(size: 14))
+            
+            Text(message)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary.opacity(0.7))
+            
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color.primary.opacity(0.03))
+        .cornerRadius(10)
+        .padding(.leading, 2)
     }
 }
 
@@ -513,4 +579,36 @@ struct EventRow: View {
         f.dateFormat = "HH:mm"
         return f
     }()
+}
+
+struct ViewHeader<Content: View>: View {
+    let title: String
+    let rightContent: () -> Content
+    
+    init(title: String, @ViewBuilder rightContent: @escaping () -> Content) {
+        self.title = title
+        self.rightContent = rightContent
+    }
+    
+    init(title: String) where Content == EmptyView {
+        self.title = title
+        self.rightContent = { EmptyView() }
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 14, weight: .bold))
+                Spacer()
+                rightContent()
+            }
+            .frame(height: 32)
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+            
+            Divider()
+        }
+    }
 }

@@ -86,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             y: screen.minY + 20
         )
 
-        petWindow = NSWindow(
+        petWindow = BuddyWindow(
             contentRect: NSRect(origin: origin, size: windowSize),
             styleMask: [.borderless],
             backing: .buffered,

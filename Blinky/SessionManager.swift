@@ -8,6 +8,7 @@ import Foundation
 import Combine
 import AppKit
 import UserNotifications
+import EventKit
 
 enum TimerPhase {
     case idle, working, meeting
@@ -44,6 +45,8 @@ class SessionManager: ObservableObject {
     @Published var meetingStartDate: Date? = nil
     @Published var meetingEndDate: Date? = nil
     @Published var meetingHasLink: Bool = false
+    @Published var meetingCountdown: String? = nil
+    @Published var upcomingMeeting: EKEvent? = nil
 
     // MARK: - State
     @Published var phase: TimerPhase = .idle
@@ -78,9 +81,11 @@ class SessionManager: ObservableObject {
     // MARK: - Init
 
     private init() {
-        loadDefaults()
+        loadHistory()
         requestNotificationPermission()
         checkDayReset()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: NSNotification.Name("BlinkyDataImported"), object: nil)
     }
 
     func checkDayReset() {
@@ -121,6 +126,17 @@ class SessionManager: ObservableObject {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 
+    var currentSessionIcon: String? {
+        switch phase {
+        case .meeting:
+            return meetingHasLink ? "video.fill" : "calendar"
+        case .working:
+            return isInfiniteSession ? "bolt.fill" : "calendar"
+        case .idle:
+            return nil
+        }
+    }
+
     var progress: Double {
         guard let limit = sessionDurationLimit, limit > 0 else { return 0 }
         return Double(secondsElapsed) / Double(limit)
@@ -134,6 +150,11 @@ class SessionManager: ObservableObject {
         } else {
             start()
         }
+    }
+    
+    @objc func reloadData() {
+        loadHistory()
+        // If there was an active session, it might be messy to reload it mid-way.
     }
 
     func start(goal: String? = nil, startDate: Date? = nil, endDate: Date? = nil, hasLink: Bool = false) {
@@ -216,6 +237,21 @@ class SessionManager: ObservableObject {
         }
     }
 
+    func discardMeeting(event: EKEvent) {
+        let session = FocusSession(
+            id: UUID(),
+            date: Date(),
+            goal: "\(event.title ?? Localization.unnamedSession) (\(Localization.at("Discarded", "Descartada")))",
+            durationInMinutes: 0
+        )
+        sessionsHistory.append(session)
+        
+        if upcomingMeeting?.eventIdentifier == event.eventIdentifier {
+            upcomingMeeting = nil
+            meetingCountdown = nil
+        }
+    }
+
     func deleteSession(id: UUID) {
         guard let index = sessionsHistory.firstIndex(where: { $0.id == id }) else { return }
         let session = sessionsHistory[index]
@@ -270,13 +306,51 @@ class SessionManager: ObservableObject {
             }
         }
         
+        // Check for upcoming meetings (within 5 minutes)
+        checkUpcomingMeetings()
+        
         // Periodically check for day reset (e.g., at midnight)
         if secondsElapsed % 60 == 0 {
             checkDayReset()
         }
     }
 
-    private func loadDefaults() {
+    private func checkUpcomingMeetings() {
+        // Only check if we are NOT already in a meeting
+        guard phase != .meeting else {
+            upcomingMeeting = nil
+            meetingCountdown = nil
+            return
+        }
+        
+        let now = Date()
+        let calendar = CalendarManager.shared
+        
+        // Find the next meeting starting in the future
+        let next = calendar.todayEvents
+            .filter { $0.startDate > now && !$0.isAllDay }
+            .sorted { $0.startDate < $1.startDate }
+            .first
+        
+        if let event = next {
+            let diff = event.startDate.timeIntervalSince(now)
+            let threshold = Double(BuddySettings.shared.meetingCountdownThreshold * 60)
+            if diff > 0 && diff <= threshold { // Configurable threshold
+                upcomingMeeting = event
+                let minutes = Int(diff) / 60
+                let seconds = Int(diff) % 60
+                meetingCountdown = String(format: "%02d:%02d", minutes, seconds)
+            } else {
+                upcomingMeeting = nil
+                meetingCountdown = nil
+            }
+        } else {
+            upcomingMeeting = nil
+            meetingCountdown = nil
+        }
+    }
+
+    private func loadHistory() {
         let ud = UserDefaults.standard
         currentGoal = ud.string(forKey: "currentGoal") ?? ""
         totalSessionsToday = ud.integer(forKey: "totalSessionsToday")

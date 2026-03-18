@@ -14,11 +14,9 @@ struct StatsView: View {
 
     var body: some View {
         VStack(spacing: 0) {            // Title & Date Picker
-            VStack(spacing: 12) {
-                HStack {
-                    Text(Localization.achievements)
-                        .font(.system(size: 16, weight: .bold))
-                    
+            // Standardized Header
+            ViewHeader(title: Localization.achievements) {
+                HStack(spacing: 12) {
                     if !Calendar.current.isDateInToday(selectedDate) {
                         Button(action: { 
                             withAnimation {
@@ -36,8 +34,6 @@ struct StatsView: View {
                         .buttonStyle(.plain)
                         .transition(.scale.combined(with: .opacity))
                     }
-                    
-                    Spacer()
                     
                     HStack(spacing: 8) {
                         Button(action: { moveDate(by: -1) }) {
@@ -80,13 +76,12 @@ struct StatsView: View {
                     }
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 16)
-            .padding(.bottom, 16)
 
             // History List
             ScrollView {
                 VStack(spacing: 12) {
+                    Color.clear.frame(height: 16) // Top padding
+                    
                     let filteredHistory = timer.sessionsHistory.filter { 
                         Calendar.current.isDate($0.date, inSameDayAs: selectedDate) 
                     }

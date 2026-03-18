@@ -9,6 +9,7 @@ import Foundation
 import EventKit
 import Combine
 import AppKit
+import SwiftUI
 
 class CalendarManager: ObservableObject {
     static let shared = CalendarManager()
@@ -102,10 +103,14 @@ class CalendarManager: ObservableObject {
         DispatchQueue.main.async {
             self.isFetching = true
             self.isAuthorized = true
+            print("CalendarManager: Starting fetchEvents...")
         }
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
+            
+            // Force refresh from system sources (iCloud, Google, etc.)
+            self.eventStore.refreshSourcesIfNecessary()
             
             let now = Date()
             let calendar = Calendar.current
@@ -123,6 +128,7 @@ class CalendarManager: ObservableObject {
             
             // If user selected calendars but they are not found, return empty
             if !self.selectedCalendarIDs.isEmpty && (calendarsToFetch == nil || calendarsToFetch!.isEmpty) {
+                print("CalendarManager: Selected IDs (\(self.selectedCalendarIDs)) not found in available calendars.")
                 DispatchQueue.main.async {
                     self.events = []
                     self.todayEvents = []
@@ -131,6 +137,8 @@ class CalendarManager: ObservableObject {
                 }
                 return
             }
+
+            print("CalendarManager: Fetching from \(calendarsToFetch?.count ?? allCalendars.count) calendars.")
 
             let predicate = self.eventStore.predicateForEvents(withStart: now, end: endOfTomorrow, calendars: calendarsToFetch)
             let allEvents = self.eventStore.events(matching: predicate)
@@ -142,13 +150,13 @@ class CalendarManager: ObservableObject {
             let today = filteredEvents.filter { calendar.isDateInToday($0.startDate) }
             let tomorrow = filteredEvents.filter { calendar.isDateInTomorrow($0.startDate) }
 
-            print("CalendarManager: Found \(allEvents.count) total events. Today: \(today.count), Tomorrow: \(tomorrow.count)")
-
-            DispatchQueue.main.async {
+            // Add a slight minimum delay so the user can actually see the sync animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.events = filteredEvents
                 self.todayEvents = today
                 self.tomorrowEvents = tomorrow
                 self.isFetching = false
+                print("CalendarManager: Fetch complete. Found \(filteredEvents.count) events.")
             }
         }
     }

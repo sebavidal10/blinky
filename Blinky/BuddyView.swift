@@ -14,6 +14,9 @@ struct BuddyView: View {
     @State private var isHovering: Bool = false
     @State private var blinkScale: CGFloat = 1.0
     @State private var smartReminder: String? = nil
+    @State private var showNoteInput: Bool = false
+    @State private var noteText: String = ""
+    @FocusState private var isNoteFocused: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -27,7 +30,7 @@ struct BuddyView: View {
                             .fill(auraColor)
                             .frame(width: 100, height: 100)
                             .blur(radius: 20)
-                            .opacity(timer.isRunning ? 0.25 : 0.1)
+                            .opacity((timer.isRunning || timer.meetingCountdown != nil) ? 0.25 : 0.1)
                             .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: isHovering)
                     }
 
@@ -36,7 +39,9 @@ struct BuddyView: View {
                               isRunning: timer.isRunning, 
                               phase: timer.phase,
                               isBlinking: blinkScale < 1.0, 
-                              isInsomniaActive: buddySettings.isInsomniaEnabled)
+                              isInsomniaActive: buddySettings.isInsomniaEnabled,
+                              meetingCountdown: timer.meetingCountdown,
+                              sessionIcon: timer.currentSessionIcon)
                         .frame(width: 90, height: 90)
                         .offset(y: floatOffset + 8) // Centralized offset
                         .scaleEffect(isHovering ? 1.05 : 1.0)
@@ -70,6 +75,54 @@ struct BuddyView: View {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                         isHovering = hovering
                     }
+                }
+                .overlay(
+                    HStack {
+                        Spacer()
+                        VStack {
+                            Spacer()
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    showNoteInput.toggle()
+                                    if showNoteInput {
+                                        // Activating app to ensure window can become key
+                                        NSApp.activate(ignoringOtherApps: true)
+                                        isNoteFocused = true
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "pencil.circle.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(showNoteInput ? .accentColor : .white.opacity(0.8))
+                                    .background(Circle().fill(Color.black.opacity(0.2)))
+                            }
+                            .buttonStyle(.plain)
+                            .transition(.scale.combined(with: .opacity))
+                            .help(Localization.quickNoteShortcut)
+                            .padding(4)
+                        }
+                    }
+                )
+                
+                if showNoteInput {
+                    VStack(spacing: 8) {
+                        TextField(Localization.at("Quick Note...", "Nota rápida..."), text: $noteText)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 11, weight: .medium))
+                            .padding(8)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(.ultraThinMaterial))
+                            .focused($isNoteFocused)
+                            .onSubmit {
+                                if !noteText.isEmpty {
+                                    NotesManager.shared.addNote(noteText)
+                                    noteText = ""
+                                }
+                                withAnimation { showNoteInput = false }
+                            }
+                            .frame(width: 140)
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.top, 4)
                 }
 
                 // Progress Timer Text
@@ -242,6 +295,10 @@ struct RobotFace: View {
     let phase: TimerPhase
     let isBlinking: Bool
     var isInsomniaActive: Bool = false
+    var meetingCountdown: String? = nil
+    var sessionIcon: String? = nil
+    
+    @State private var isBlinkingCountdown: Bool = false
     
     var body: some View {
         ZStack {
@@ -272,8 +329,27 @@ struct RobotFace: View {
                 .frame(width: 64, height: 50)
                 .shadow(inner: .black.opacity(0.6), radius: 3)
             
-            // Interaction: Eyes or PAUSE text
-            if !isRunning && phase != .idle {
+            // Contextual Icon (Bottom Left)
+            if let icon = sessionIcon, meetingCountdown == nil {
+                Image(systemName: icon)
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundColor(statusColor.opacity(0.4))
+                    .offset(x: -24, y: 16)
+                    .transition(.opacity)
+            }
+            
+            // Interaction: Eyes or PAUSE or COUNTDOWN
+            if let countdown = meetingCountdown {
+                Text(countdown)
+                    .font(.system(size: 14, weight: .black, design: .monospaced))
+                    .foregroundColor(.orange)
+                    .opacity(isBlinkingCountdown ? 0.3 : 1.0)
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                            isBlinkingCountdown = true
+                        }
+                    }
+            } else if !isRunning && phase != .idle {
                 Text(Localization.pauseLabel.uppercased())
                     .font(.system(size: 10, weight: .black))
                     .foregroundColor(statusColor)
