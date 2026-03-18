@@ -112,20 +112,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupTimerObserver() {
-        Publishers.CombineLatest4(
-            SessionManager.shared.$secondsRemaining.removeDuplicates(),
-            SessionManager.shared.$secondsElapsed.removeDuplicates(),
-            SessionManager.shared.$isRunning.removeDuplicates(),
-            SessionManager.shared.$phase.removeDuplicates()
+        Publishers.CombineLatest(
+            Publishers.CombineLatest4(
+                SessionManager.shared.$secondsRemaining.removeDuplicates(),
+                SessionManager.shared.$secondsElapsed.removeDuplicates(),
+                SessionManager.shared.$isRunning.removeDuplicates(),
+                SessionManager.shared.$phase.removeDuplicates()
+            ),
+            SessionManager.shared.$meetingCountdown.removeDuplicates()
         )
         .receive(on: RunLoop.main)
-        .sink { [weak self] _, _, isRunning, phase in
-            self?.updateStatusItemTitle(isRunning: isRunning, phase: phase)
+        .sink { [weak self] base, meetingCountdown in
+            let (_, _, isRunning, phase) = base
+            self?.updateStatusItemTitle(isRunning: isRunning, phase: phase, meetingCountdown: meetingCountdown)
         }
         .store(in: &cancellables)
     }
 
-    private func updateStatusItemTitle(isRunning: Bool, phase: TimerPhase) {
+    private func updateStatusItemTitle(isRunning: Bool, phase: TimerPhase, meetingCountdown: String? = nil) {
         let button = statusItem?.button
         
         // Ensure everything is cleared first
@@ -133,14 +137,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         button?.title = ""
         button?.attributedTitle = NSAttributedString(string: "")
 
-        if phase != .idle {
+        let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .baselineOffset: -0.5
+        ]
+
+        if let countdown = meetingCountdown {
+            // Meeting is coming up! (Prioritize this over idle)
+            let title = "􀧞 " + countdown // calendar.badge.clock icon
+            button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
+            button?.contentTintColor = .orange
+        } else if phase != .idle {
             let title = SessionManager.shared.timeString
-            
-            let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: font,
-                .baselineOffset: -0.5
-            ]
             button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
         }
     }

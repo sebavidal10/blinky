@@ -144,7 +144,9 @@ class CalendarManager: ObservableObject {
             let allEvents = self.eventStore.events(matching: predicate)
             
             let filteredEvents = allEvents
-                .filter { $0.endDate > now }
+                // Filter events that have ALREADY STARTED in the past. We only want upcoming events.
+                // We add a small 5 minute buffer so events slightly started don't disappear immediately
+                .filter { $0.startDate > now.addingTimeInterval(-300) && !$0.isAllDay }
                 .sorted { $0.startDate < $1.startDate }
                 
             let today = filteredEvents.filter { calendar.isDateInToday($0.startDate) }
