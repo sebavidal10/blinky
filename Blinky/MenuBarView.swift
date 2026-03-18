@@ -376,7 +376,15 @@ struct MenuBarView: View {
                                     VStack(alignment: .leading, spacing: 20) {
                                         // Today
                                         VStack(alignment: .leading, spacing: 12) {
-                                            Text(Localization.todayLabel)
+                                            let todayLabelWithDate: String = {
+                                                let formatter = DateFormatter()
+                                                formatter.dateFormat = "d MMM"
+                                                formatter.locale = Locale(identifier: Localization.resolvedLanguage)
+                                                let dateStr = formatter.string(from: Date()).capitalized
+                                                return "\(Localization.todayLabel), \(dateStr)"
+                                            }()
+                                            
+                                            Text(todayLabelWithDate)
                                                 .font(.system(size: 11, weight: .bold))
                                                 .foregroundColor(.secondary.opacity(0.5))
                                                 .padding(.leading, 2)

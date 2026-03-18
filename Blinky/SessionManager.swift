@@ -86,6 +86,7 @@ class SessionManager: ObservableObject {
         checkDayReset()
         
         NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: NSNotification.Name("BlinkyDataImported"), object: nil)
+        startTicking()
     }
 
     func checkDayReset() {
@@ -192,14 +193,12 @@ class SessionManager: ObservableObject {
         isRunning = true
         
         updateMood()
-        startTicking()
-        UserDefaults.standard.set(Date(), forKey: "lastActiveDate")
+        lastTickDate = Date()
+        UserDefaults.standard.set(lastTickDate, forKey: "lastActiveDate")
     }
 
     func stop() {
         isRunning = false
-        timer?.cancel()
-        timer = nil
         updateMood()
     }
 
@@ -268,16 +267,24 @@ class SessionManager: ObservableObject {
 
     private func startTicking() {
         timer?.cancel()
-        lastTickDate = Date()
         timer = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in self?.tick() }
     }
 
     private func tick() {
+        let now = Date()
+        
+        // Always check for upcoming meetings, even if idle
+        checkUpcomingMeetings()
+        
+        // Periodically check for day reset (at the top of the minute)
+        if Calendar.current.component(.second, from: now) == 0 {
+            checkDayReset()
+        }
+        
         guard isRunning else { return }
         
-        let now = Date()
         let elapsed = Int(now.timeIntervalSince(lastTickDate ?? now))
         lastTickDate = now
         
@@ -304,14 +311,6 @@ class SessionManager: ObservableObject {
                 finishSession()
                 sendNotification(title: Localization.notifSessionCompeleted, body: Localization.notifClickStart)
             }
-        }
-        
-        // Check for upcoming meetings (within 5 minutes)
-        checkUpcomingMeetings()
-        
-        // Periodically check for day reset (e.g., at midnight)
-        if secondsElapsed % 60 == 0 {
-            checkDayReset()
         }
     }
 

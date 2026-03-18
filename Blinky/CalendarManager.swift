@@ -42,6 +42,18 @@ class CalendarManager: ObservableObject {
             .store(in: &cancellables)
         
         checkAuthorization()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(eventStoreChanged),
+            name: .EKEventStoreChanged,
+            object: eventStore
+        )
+    }
+    
+    @objc private func eventStoreChanged() {
+        // Automatically refetch events when system calendar changes
+        fetchEvents()
     }
     
     func checkAuthorization() {

@@ -145,9 +145,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         if let countdown = meetingCountdown {
             // Meeting is coming up! (Prioritize this over idle)
-            let title = "􀧞 " + countdown // calendar.badge.clock icon
-            button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
-            button?.contentTintColor = .orange
+            let attrsOrange: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .baselineOffset: -0.5,
+                .foregroundColor: NSColor.systemOrange
+            ]
+            button?.attributedTitle = NSAttributedString(string: countdown, attributes: attrsOrange)
         } else if phase != .idle {
             let title = SessionManager.shared.timeString
             button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
