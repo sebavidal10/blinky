@@ -129,9 +129,9 @@ class SessionManager: ObservableObject {
     var currentSessionIcon: String? {
         switch phase {
         case .meeting:
-            return meetingHasLink ? "video.fill" : "calendar"
+            return meetingHasLink ? "video" : "calendar"
         case .working:
-            return isInfiniteSession ? "bolt.fill" : "calendar"
+            return isInfiniteSession ? "bolt" : "calendar"
         case .idle:
             return nil
         }

@@ -49,7 +49,7 @@ This skill ensures that every code modification maintains the structural integri
 
 - **Data Management**: A `DataPortalManager` handles mass `UserDefaults` Export/Import via JSON files. **Always place Data Management in its own dedicated card (caluga) in Settings.**
 - **UI Architecture**: Maintain a segmented layout in Settings using independent `.ultraThinMaterial` cards for different logic groups (General, Data, Buddy, etc.). Ensure vertical alignment for all controls, avoiding ad-hoc padding that breaks the grid.
-- **Contextual Icons**: Dynamic SFSymbols appear in the **bottom-left** of Blinky's face to indicate the current session type (Meeting vs Work).
+- **Contextual Icons**: Dynamic SFSymbols appear as circular overlays in the **bottom-left** of Blinky's outer shell, mirroring the pencil button on the right.
 - **Meeting Countdown**: Discrete threshold (5, 10, 15 min picker) displayed on eyes.
 - **Insomnia Mode**: Power management assertions to prevent sleep. **Forced to enabled by default** on every app launch.
 - **Blinking Animation**: Uses asyncAfter with recursive calls for natural eye blinking.

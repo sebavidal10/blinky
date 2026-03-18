@@ -40,8 +40,7 @@ struct BuddyView: View {
                               phase: timer.phase,
                               isBlinking: blinkScale < 1.0, 
                               isInsomniaActive: buddySettings.isInsomniaEnabled,
-                              meetingCountdown: timer.meetingCountdown,
-                              sessionIcon: timer.currentSessionIcon)
+                              meetingCountdown: timer.meetingCountdown)
                         .frame(width: 90, height: 90)
                         .offset(y: floatOffset + 8) // Centralized offset
                         .scaleEffect(isHovering ? 1.05 : 1.0)
@@ -77,8 +76,23 @@ struct BuddyView: View {
                     }
                 }
                 .overlay(
-                    HStack {
+                    HStack(alignment: .bottom) {
+                        // Left: Session Icon (Mirroring pencil)
+                        VStack {
+                            Spacer()
+                            if let icon = timer.currentSessionIcon, timer.meetingCountdown == nil {
+                                Image(systemName: icon + ".circle.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white.opacity(0.8))
+                                    .background(Circle().fill(Color.black.opacity(0.2)))
+                                    .transition(.scale.combined(with: .opacity))
+                                    .padding(4)
+                            }
+                        }
+                        
                         Spacer()
+                        
+                        // Right: Pencil Button
                         VStack {
                             Spacer()
                             Button(action: {
@@ -296,7 +310,6 @@ struct RobotFace: View {
     let isBlinking: Bool
     var isInsomniaActive: Bool = false
     var meetingCountdown: String? = nil
-    var sessionIcon: String? = nil
     
     @State private var isBlinkingCountdown: Bool = false
     
@@ -329,14 +342,6 @@ struct RobotFace: View {
                 .frame(width: 64, height: 50)
                 .shadow(inner: .black.opacity(0.6), radius: 3)
             
-            // Contextual Icon (Bottom Left)
-            if let icon = sessionIcon, meetingCountdown == nil {
-                Image(systemName: icon)
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundColor(statusColor.opacity(0.4))
-                    .offset(x: -24, y: 16)
-                    .transition(.opacity)
-            }
             
             // Interaction: Eyes or PAUSE or COUNTDOWN
             if let countdown = meetingCountdown {
