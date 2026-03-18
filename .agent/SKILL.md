@@ -52,4 +52,4 @@ This skill ensures that every code modification maintains the structural integri
 - **Contextual Icons**: Dynamic SFSymbols appear as circular overlays in the **bottom-left** of Blinky's outer shell, mirroring the pencil button on the right.
 - **Meeting Countdown**: Discrete threshold (5, 10, 15 min picker) displayed on eyes.
 - **Insomnia Mode**: Power management assertions to prevent sleep. **Forced to enabled by default** on every app launch.
-- **Blinking Animation**: Uses asyncAfter with recursive calls for natural eye blinking.
+- **Automated Build Versioning**: Whenever finishing a task that requires compiling a new release or submitting to the App Store, you MUST remember to automatically increment the `CURRENT_PROJECT_VERSION` (build number) in `project.pbxproj`. Do not change the marketing version unless explicitly requested.
