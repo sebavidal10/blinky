@@ -8,6 +8,7 @@ import AppKit
 import SwiftUI
 import UserNotifications
 import Combine
+import EventKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
@@ -112,24 +113,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupTimerObserver() {
-        Publishers.CombineLatest(
+        Publishers.CombineLatest4(
             Publishers.CombineLatest4(
                 SessionManager.shared.$secondsRemaining.removeDuplicates(),
                 SessionManager.shared.$secondsElapsed.removeDuplicates(),
                 SessionManager.shared.$isRunning.removeDuplicates(),
                 SessionManager.shared.$phase.removeDuplicates()
             ),
-            SessionManager.shared.$meetingCountdown.removeDuplicates()
+            SessionManager.shared.$meetingCountdown.removeDuplicates(),
+            SessionManager.shared.$upcomingMeeting.removeDuplicates(),
+            BuddySettings.shared.$showNextEventInMenuBar.removeDuplicates()
         )
         .receive(on: RunLoop.main)
-        .sink { [weak self] base, meetingCountdown in
+        .sink { [weak self] base, meetingCountdown, upcomingMeeting, showNextEventSelection in
             let (_, _, isRunning, phase) = base
-            self?.updateStatusItemTitle(isRunning: isRunning, phase: phase, meetingCountdown: meetingCountdown)
+            self?.updateStatusItemTitle(isRunning: isRunning, 
+                                      phase: phase, 
+                                      meetingCountdown: meetingCountdown,
+                                      upcomingMeeting: upcomingMeeting)
         }
         .store(in: &cancellables)
     }
 
-    private func updateStatusItemTitle(isRunning: Bool, phase: TimerPhase, meetingCountdown: String? = nil) {
+    private func updateStatusItemTitle(isRunning: Bool, 
+                                       phase: TimerPhase, 
+                                       meetingCountdown: String? = nil,
+                                       upcomingMeeting: EKEvent? = nil) {
         let button = statusItem?.button
         
         // Ensure everything is cleared first
@@ -144,7 +153,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ]
 
         if let countdown = meetingCountdown {
-            // Meeting is coming up! (Prioritize this over idle)
+            // Meeting is very close! (Show countdown in orange)
             let attrsOrange: [NSAttributedString.Key: Any] = [
                 .font: font,
                 .baselineOffset: -0.5,
@@ -152,8 +161,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             ]
             button?.attributedTitle = NSAttributedString(string: countdown, attributes: attrsOrange)
         } else if phase != .idle {
+            // Active session (Focus or Break)
             let title = SessionManager.shared.timeString
             button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
+        } else if let next = upcomingMeeting, BuddySettings.shared.showNextEventInMenuBar {
+            // Idle but with an upcoming meeting today/soon (If enabled in settings)
+            let df = DateFormatter()
+            df.dateFormat = "HH:mm"
+            let timeStr = df.string(from: next.startDate)
+            let titleText = "\(Localization.nextEvent): \(next.title ?? "") (\(timeStr) hrs)"
+            
+            let attrsGray: [NSAttributedString.Key: Any] = [
+                .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                .baselineOffset: -0.5,
+                .foregroundColor: NSColor.secondaryLabelColor
+            ]
+            button?.attributedTitle = NSAttributedString(string: titleText, attributes: attrsGray)
         }
     }
 

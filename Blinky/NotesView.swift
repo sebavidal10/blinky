@@ -11,6 +11,7 @@ struct NotesView: View {
     @ObservedObject var notesManager = NotesManager.shared
     @State private var newNoteText: String = ""
     @FocusState private var isInputFocused: Bool
+    @State private var noteToDelete: QuickNote? = nil
     
     var body: some View {
         VStack(spacing: 0) {
@@ -49,7 +50,9 @@ struct NotesView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(notesManager.notes) { note in
-                            NoteRow(note: note)
+                            NoteRow(note: note) {
+                                noteToDelete = note
+                            }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -59,6 +62,28 @@ struct NotesView: View {
         }
         .onAppear {
             isInputFocused = true
+        }
+        .confirmationDialog(
+            Localization.at("Are you sure?", "¿Estás seguro?"),
+            isPresented: Binding(
+                get: { noteToDelete != nil },
+                set: { if !$0 { noteToDelete = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button(Localization.at("Delete", "Eliminar"), role: .destructive) {
+                if let note = noteToDelete {
+                    withAnimation {
+                        notesManager.deleteNote(id: note.id)
+                    }
+                }
+                noteToDelete = nil
+            }
+            Button(Localization.at("Cancel", "Cancelar"), role: .cancel) {
+                noteToDelete = nil
+            }
+        } message: {
+            Text(Localization.at("This action cannot be undone.", "Esta acción no se puede deshacer."))
         }
     }
     
@@ -77,6 +102,7 @@ struct NoteRow: View {
     let note: QuickNote
     @ObservedObject var notesManager = NotesManager.shared
     @State private var isHovering = false
+    let onDelete: () -> Void
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -95,11 +121,7 @@ struct NoteRow: View {
             Spacer()
             
             if isHovering {
-                Button(action: {
-                    withAnimation {
-                        notesManager.deleteNote(id: note.id)
-                    }
-                }) {
+                Button(action: onDelete) {
                     Image(systemName: "trash")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.red.opacity(0.7))

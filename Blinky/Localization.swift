@@ -179,4 +179,13 @@ class Localization {
     static var noNotes: String { at("No notes yet.\nJot down your thoughts!", "Aún no hay notas.\n¡Escribe tus pensamientos!") }
     static var typeSomething: String { at("Type something and press Enter...", "Escribe algo y pulsa Enter...") }
     static var quickNoteShortcut: String { at("New Note", "Nueva Nota") }
+    static var nextEvent: String { at("Next Event", "Próximo") }
+    
+    // Smart Reminders
+    static var reminderTooManyMeetings: String { at("Many meetings today! Focus time? ⚡️", "¡Muchas reuniones! ¿Hora de enfocar? ⚡️") }
+    static func reminderGreatProgress(_ mins: Int) -> String {
+        return at("Great progress! \(mins)m focused 🚀", "¡Gran progreso! \(mins)m de enfoque 🚀")
+    }
+    
+    static var showNextEvent: String { at("Show Next Event in Menu Bar", "Mostrar próximo evento en barra") }
 }

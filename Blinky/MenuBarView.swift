@@ -106,6 +106,7 @@ struct MenuBarView: View {
                     .foregroundColor(.secondary)
             })
 
+
             // Pet mood / Robot State
             HStack(spacing: 12) {
                 RobotFace(mood: timer.mood, 

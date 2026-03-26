@@ -12,6 +12,7 @@ struct BuddyView: View {
     @ObservedObject var buddySettings = BuddySettings.shared
     @State private var floatOffset: CGFloat = 0
     @State private var isHovering: Bool = false
+    @State private var auraPulse: CGFloat = 1.0
     @State private var blinkScale: CGFloat = 1.0
     @State private var smartReminder: String? = nil
     @State private var showNoteInput: Bool = false
@@ -31,7 +32,14 @@ struct BuddyView: View {
                             .frame(width: 100, height: 100)
                             .blur(radius: 20)
                             .opacity((timer.isRunning || timer.meetingCountdown != nil) ? 0.25 : 0.1)
+                            .scaleEffect(timer.isRunning ? auraPulse : 1.0)
                             .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: isHovering)
+                    }
+                    
+                    if timer.mood == .celebrating {
+                        ConfettiView()
+                            .frame(width: 160, height: 200)
+                            .transition(.opacity)
                     }
 
                     // NATIVE ROBOT FACE
@@ -171,6 +179,7 @@ struct BuddyView: View {
     }
 
     var auraColor: Color {
+        if timer.phase == .meeting { return .teal }
         switch timer.mood {
         case .focused:     return .blue
         case .celebrating: return .orange
@@ -189,6 +198,10 @@ struct BuddyView: View {
     func startAnimations() {
         withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
             floatOffset = -6
+        }
+        
+        withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+            auraPulse = 1.2
         }
     }
 
@@ -244,10 +257,18 @@ struct BuddyView: View {
             Localization.reminderReadyFocus
         ]
         
-        let randomReminder = reminders.randomElement() ?? Localization.reminderKeepItUp
+        var selectedReminder = reminders.randomElement() ?? Localization.reminderKeepItUp
+        
+        // Contextual overrides
+        let timer = SessionManager.shared
+        if timer.consecutiveMeetings >= 3 {
+            selectedReminder = Localization.reminderTooManyMeetings
+        } else if timer.focusTimeToday >= 60 && timer.focusTimeToday % 60 < 5 {
+            selectedReminder = Localization.reminderGreatProgress(timer.focusTimeToday)
+        }
         
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            smartReminder = randomReminder
+            smartReminder = selectedReminder
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) {

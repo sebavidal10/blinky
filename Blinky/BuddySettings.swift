@@ -35,6 +35,10 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(meetingCountdownThreshold, forKey: "meetingCountdownThreshold") }
     }
 
+    @Published var showNextEventInMenuBar: Bool = true {
+        didSet { UserDefaults.standard.set(showNextEventInMenuBar, forKey: "showNextEventInMenuBar") }
+    }
+
 
     @Published var isInsomniaEnabled: Bool = false {
         didSet {
@@ -82,6 +86,8 @@ class BuddySettings: ObservableObject {
         let savedThreshold = UserDefaults.standard.integer(forKey: "meetingCountdownThreshold")
         meetingCountdownThreshold = savedThreshold > 0 ? savedThreshold : 5
         
+        showNextEventInMenuBar = UserDefaults.standard.object(forKey: "showNextEventInMenuBar") as? Bool ?? true
+        
         // Sync launchAtLogin with system status
         launchAtLogin = SMAppService.mainApp.status == .enabled
         
@@ -107,6 +113,8 @@ class BuddySettings: ObservableObject {
         
         let savedThreshold = UserDefaults.standard.integer(forKey: "meetingCountdownThreshold")
         meetingCountdownThreshold = savedThreshold > 0 ? savedThreshold : 5
+        
+        showNextEventInMenuBar = UserDefaults.standard.object(forKey: "showNextEventInMenuBar") as? Bool ?? true
         
         InsomniaManager.shared.updateState(enabled: isInsomniaEnabled)
     }

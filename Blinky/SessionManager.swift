@@ -9,6 +9,7 @@ import Combine
 import AppKit
 import UserNotifications
 import EventKit
+import SwiftData
 
 enum TimerPhase {
     case idle, working, meeting
@@ -26,12 +27,6 @@ enum PetMood {
     }
 }
 
-struct FocusSession: Codable, Identifiable {
-    let id: UUID
-    let date: Date
-    let goal: String
-    let durationInMinutes: Int
-}
 
 class SessionManager: ObservableObject {
     static let shared = SessionManager()
@@ -66,22 +61,49 @@ class SessionManager: ObservableObject {
     @Published var currentStreak: Int = 0 {
         didSet { UserDefaults.standard.set(currentStreak, forKey: "currentStreak") }
     }
-    @Published var sessionsHistory: [FocusSession] = [] {
-        didSet {
-            // Background saving to prevent blocking the UI thread
-            DispatchQueue.global(qos: .background).async {
-                if let encoded = try? JSONEncoder().encode(self.sessionsHistory) {
-                    UserDefaults.standard.set(encoded, forKey: "sessionsHistory")
-                }
+    @Published var sessionsHistory: [FocusSession] = []
+    
+    var focusTimeToday: Int {
+        sessionsHistory
+            .filter { Calendar.current.isDateInToday($0.date) && $0.type == .focus }
+            .reduce(0) { $0 + $1.durationInMinutes }
+    }
+    
+    var consecutiveMeetings: Int {
+        let today = Calendar.current.startOfDay(for: Date())
+        let todaySessions = sessionsHistory
+            .filter { $0.date >= today }
+            .sorted { $0.date > $1.date }
+        
+        var count = 0
+        for session in todaySessions {
+            if session.type == .meeting {
+                count += 1
+            } else if session.type == .focus && session.durationInMinutes >= 5 {
+                break
             }
         }
+        return count
     }
+    
+    private var modelContainer: ModelContainer?
+    private var modelContext: ModelContext?
 
     private var timer: AnyCancellable?
 
     // MARK: - Init
 
     private init() {
+        // Initialize SwiftData
+        do {
+            let container = try ModelContainer(for: FocusSession.self)
+            self.modelContainer = container
+            self.modelContext = ModelContext(container)
+            print("SessionManager: SwiftData initialized successfully.")
+        } catch {
+            print("SessionManager: Failed to initialize SwiftData: \(error)")
+        }
+
         if let savedDiscarded = UserDefaults.standard.stringArray(forKey: "discardedMeetingIDs") {
             discardedMeetingIDs = Set(savedDiscarded)
         }
@@ -92,6 +114,9 @@ class SessionManager: ObservableObject {
         
         NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: NSNotification.Name("BlinkyDataImported"), object: nil)
         startTicking()
+        
+        // Migration from UserDefaults
+        migrateFromUserDefaults()
     }
 
     func checkDayReset() {
@@ -221,15 +246,16 @@ class SessionManager: ObservableObject {
     func finishSession() {
         let duration = isInfiniteSession ? secondsElapsed : (sessionDurationLimit ?? secondsElapsed)
         let session = FocusSession(
-            id: UUID(),
-            date: Date(),
             goal: currentGoal.isEmpty ? Localization.unnamedSession : currentGoal,
-            durationInMinutes: max(1, duration / 60)
+            durationInMinutes: max(1, duration / 60),
+            type: phase == .meeting ? .meeting : .focus
         )
         
-        sessionsHistory.append(session)
+        modelContext?.insert(session)
+        sessionsHistory.insert(session, at: 0)
         totalSessionsToday += 1
         totalSessionsAllTime += 1
+        saveHistory()
         
         reset()
         
@@ -246,12 +272,13 @@ class SessionManager: ObservableObject {
 
     func discardMeeting(event: EKEvent) {
         let session = FocusSession(
-            id: UUID(),
-            date: Date(),
             goal: "\(event.title ?? Localization.unnamedSession) (\(Localization.at("Discarded", "Descartada")))",
-            durationInMinutes: 0
+            durationInMinutes: 0,
+            type: .meeting
         )
-        sessionsHistory.append(session)
+        modelContext?.insert(session)
+        sessionsHistory.insert(session, at: 0)
+        saveHistory()
         
         discardedMeetingIDs.insert(event.eventIdentifier)
         UserDefaults.standard.set(Array(discardedMeetingIDs), forKey: "discardedMeetingIDs")
@@ -269,7 +296,9 @@ class SessionManager: ObservableObject {
             totalSessionsToday = max(0, totalSessionsToday - 1)
         }
         totalSessionsAllTime = max(0, totalSessionsAllTime - 1)
+        modelContext?.delete(session)
         sessionsHistory.remove(at: index)
+        saveHistory()
     }
 
     // MARK: - Internal
@@ -336,28 +365,65 @@ class SessionManager: ObservableObject {
         let now = Date()
         let calendar = CalendarManager.shared
         
-        // Find the next meeting starting in the future
-        let next = calendar.todayEvents
-            .filter { $0.startDate > now && !$0.isAllDay && !discardedMeetingIDs.contains($0.eventIdentifier) }
+        // Find the next meeting starting within the next 12 hours
+        let twelveHours: TimeInterval = 12 * 3600
+        let next = calendar.events
+            .filter { 
+                $0.endDate > now && 
+                !$0.isAllDay && 
+                !discardedMeetingIDs.contains($0.eventIdentifier) &&
+                $0.startDate.timeIntervalSince(now) <= twelveHours
+            }
             .sorted { $0.startDate < $1.startDate }
             .first
         
         if let event = next {
             let diff = event.startDate.timeIntervalSince(now)
+            
+            // AUTO START LOGIC
+            // If the meeting has started (diff <= 1s) and hasn't ended yet
+            if diff <= 1.0 && event.endDate > now {
+                print("SessionManager: Auto-starting meeting: \(event.title ?? "")")
+                start(goal: event.title, 
+                      startDate: event.startDate, 
+                      endDate: event.endDate, 
+                      hasLink: hasMeetingLink(event))
+                upcomingMeeting = nil
+                meetingCountdown = nil
+                return
+            }
+            
+            // ALWAYS expose the next meeting for UI purposes
+            upcomingMeeting = event
+            
             let threshold = Double(BuddySettings.shared.meetingCountdownThreshold * 60)
             if diff > 0 && diff <= threshold { // Configurable threshold
-                upcomingMeeting = event
                 let minutes = Int(diff) / 60
                 let seconds = Int(diff) % 60
                 meetingCountdown = String(format: "%02d:%02d", minutes, seconds)
             } else {
-                upcomingMeeting = nil
                 meetingCountdown = nil
             }
         } else {
             upcomingMeeting = nil
             meetingCountdown = nil
         }
+    }
+    
+    private func hasMeetingLink(_ event: EKEvent) -> Bool {
+        if event.url != nil { return true }
+        if let notes = event.notes {
+            let patterns = ["zoom.us/", "meet.google.com/", "teams.microsoft.com/"]
+            for pattern in patterns {
+                if notes.contains(pattern) { return true }
+            }
+        }
+        return false
+    }
+
+    // MARK: - Persistence
+    private func saveHistory() {
+        try? modelContext?.save()
     }
 
     private func loadHistory() {
@@ -367,9 +433,45 @@ class SessionManager: ObservableObject {
         totalSessionsAllTime = ud.integer(forKey: "totalSessionsAllTime")
         currentStreak = ud.integer(forKey: "currentStreak")
         
-        if let data = ud.data(forKey: "sessionsHistory"),
-           let decoded = try? JSONDecoder().decode([FocusSession].self, from: data) {
-            sessionsHistory = decoded
+        guard let modelContext = modelContext else { return }
+        
+        let descriptor = FetchDescriptor<FocusSession>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        do {
+            sessionsHistory = try modelContext.fetch(descriptor)
+            print("SessionManager: Loaded \(sessionsHistory.count) sessions from SwiftData.")
+        } catch {
+            print("SessionManager: Failed to load history: \(error)")
+        }
+    }
+    
+    private func migrateFromUserDefaults() {
+        let ud = UserDefaults.standard
+        guard let data = ud.data(forKey: "sessionsHistory"),
+              let modelContext = modelContext else { return }
+        
+        if ud.bool(forKey: "hasMigratedToSwiftData") { return }
+        
+        do {
+            let decoder = JSONDecoder()
+            struct LegacySession: Codable {
+                let id: UUID
+                let date: Date
+                let goal: String
+                let durationInMinutes: Int
+            }
+            
+            let legacySessions = try decoder.decode([LegacySession].self, from: data)
+            for legacy in legacySessions {
+                let newSession = FocusSession(id: legacy.id, date: legacy.date, goal: legacy.goal, durationInMinutes: legacy.durationInMinutes)
+                modelContext.insert(newSession)
+            }
+            
+            try modelContext.save()
+            ud.set(true, forKey: "hasMigratedToSwiftData")
+            print("SessionManager: Successfully migrated \(legacySessions.count) sessions.")
+            loadHistory()
+        } catch {
+            print("SessionManager: Migration failed: \(error)")
         }
     }
 
@@ -416,5 +518,12 @@ class SessionManager: ObservableObject {
             )
             UNUserNotificationCenter.current().add(request)
         }
+    }
+
+    func hasActivity(on date: Date) -> Bool {
+        let calendar = Calendar.current
+        let hasSession = sessionsHistory.contains { calendar.isDate($0.date, inSameDayAs: date) }
+        let hasNote = NotesManager.shared.notes.contains { calendar.isDate($0.date, inSameDayAs: date) }
+        return hasSession || hasNote
     }
 }

@@ -6,8 +6,9 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 
 - **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Celebrating). **Imminent meetings** (selector for 5, 10, 15 mins) are displayed on his eyes with an orange countdown. **Contextual icons** (video, calendar, bolt) appear on his face to show the current activity type.
 - **⏱️ Infinite Work Sessions**: Open-ended stopwatch sessions with no time limit.
-- **📅 Smart Meeting Alerts**: Automatically detects upcoming meetings and provides a **Discard** option to skip and log them.
+- **📅 Smart Meeting Alerts**: Automatically detects upcoming meetings. **Auto-Start** logic activates the session and timer at the exact start time. The header dynamically shows the **Next Event** (within 12h) before the countdown begins.
 - **📁 Grouped Meetings**: Clear visual separation for Today/Tomorrow with **engaging empty states**.
+- **📍 Activity Indicators**: Custom-built historical calendar with **dot indicators** for days with focus sessions or notes.
 - **💎 Premium UI Consistency**: Normalized headers across all sections for a more professional and seamless experience.
 - **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, **Data Management** (JSON Export/Import), Buddy Config, and Calendars.
  Browser and Calendar selection are now integrated into the main **Settings** view, avoiding redundant navigation.
@@ -18,7 +19,7 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 - **📈 Historial (History)**: Track your daily progress with a filtered session list...
 - **📜 Detailed Session Cards**: Each session shows your goal, start time, and duration in a clean 2-line layout.
 - **📝 Quick Notes**: Jot down thoughts instantly from the Buddy's floating UI or manage them in the dedicated **Notes** tab in the menu bar.
-- **🗑 Session & Note Management**: Delete individual sessions or notes directly from their respective lists.
+- **🗑 Secure Management**: All deletions for sessions and notes are guarded by a **Parent-level Confirmation Dialog**, ensuring stability even during real-time timer updates.
 - **🌐 Bilingual**: Full English and Spanish localization.
 - **🔋 Native Performance**: Built with SwiftUI and AppKit for maximum performance and minimal resource usage.
 
@@ -46,6 +47,7 @@ Blinky/
 ├── MenuBarView.swift         # Main popover interface and notes integration
 ├── SettingsView.swift        # Unified configuration (General, Browser, Calendars)
 ├── StatsView.swift           # Historial (session history and date navigation)
+├── CalendarDotsView.swift    # Custom historical calendar with activity dots
 ├── NotesView.swift           # Quick notes list and management
 ├── Localization.swift        # Full English & Spanish support
 ├── SyncIcon.swift            # Reusable robust rotation animation component

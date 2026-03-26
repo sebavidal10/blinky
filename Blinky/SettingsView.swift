@@ -117,6 +117,7 @@ struct SettingsView: View {
                             AppearanceToggle(title: Localization.showBuddy, icon: buddySettings.isBuddyVisible ? "eye.fill" : "eye.slash.fill", isOn: $buddySettings.isBuddyVisible)
                             AppearanceToggle(title: Localization.lightingEffect, icon: buddySettings.showAura ? "sun.max.fill" : "sun.max", isOn: $buddySettings.showAura)
                             AppearanceToggle(title: Localization.insomniaMode, icon: buddySettings.isInsomniaEnabled ? "bolt.fill" : "bolt", isOn: $buddySettings.isInsomniaEnabled)
+                            AppearanceToggle(title: Localization.showNextEvent, icon: buddySettings.showNextEventInMenuBar ? "calendar.badge.clock" : "calendar", isOn: $buddySettings.showNextEventInMenuBar)
                             
                             Divider()
                                 .padding(.vertical, 4)

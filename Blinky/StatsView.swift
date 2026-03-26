@@ -11,6 +11,7 @@ struct StatsView: View {
     @EnvironmentObject var timer: SessionManager
     @State private var selectedDate = Date()
     @State private var showDatePicker = false
+    @State private var sessionToDelete: FocusSession? = nil
 
     var body: some View {
         VStack(spacing: 0) {            // Title & Date Picker
@@ -57,10 +58,9 @@ struct StatsView: View {
                         }
                         .buttonStyle(.plain)
                         .popover(isPresented: $showDatePicker) {
-                            DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                                .datePickerStyle(.graphical)
+                            CalendarDotsView(selectedDate: $selectedDate)
+                                .environmentObject(timer)
                                 .frame(width: 280)
-                                .padding()
                                 .onChange(of: selectedDate) { _, _ in
                                     showDatePicker = false
                                 }
@@ -99,13 +99,37 @@ struct StatsView: View {
                         .padding(.top, 40)
                     } else {
                         ForEach(filteredHistory.reversed()) { session in
-                            SessionRow(session: session)
+                            SessionRow(session: session) {
+                                sessionToDelete = session
+                            }
                         }
                     }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
+        }
+        .confirmationDialog(
+            Localization.at("Are you sure?", "¿Estás seguro?"),
+            isPresented: Binding(
+                get: { sessionToDelete != nil },
+                set: { if !$0 { sessionToDelete = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button(Localization.at("Delete", "Eliminar"), role: .destructive) {
+                if let session = sessionToDelete {
+                    withAnimation {
+                        timer.deleteSession(id: session.id)
+                    }
+                }
+                sessionToDelete = nil
+            }
+            Button(Localization.at("Cancel", "Cancelar"), role: .cancel) {
+                sessionToDelete = nil
+            }
+        } message: {
+            Text(Localization.at("This action cannot be undone.", "Esta acción no se puede deshacer."))
         }
     }
     
@@ -145,6 +169,7 @@ struct StatsView: View {
 struct SessionRow: View {
     @EnvironmentObject var timer: SessionManager
     let session: FocusSession
+    let onDelete: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -167,11 +192,7 @@ struct SessionRow: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    withAnimation {
-                        timer.deleteSession(id: session.id)
-                    }
-                }) {
+                Button(action: onDelete) {
                     Image(systemName: "trash")
                         .font(.system(size: 10))
                         .foregroundColor(.red.opacity(0.8))
