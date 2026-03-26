@@ -36,8 +36,15 @@ class Localization {
     
     static var unnamedSession: String { at("Unnamed Session", "Sesión sin nombre") }
     static var aboutTitle: String { at("About Blinky", "Acerca de Blinky") }
-    static var aboutVersion: String { at("Version 1.0", "Versión 1.0") }
-    static var aboutCopyright: String { at("© 2026 Sebastián Vidal", "© 2026 Sebastián Vidal") }
+    static var aboutVersion: String { 
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "5"
+        return at("Version \(v) (\(b))", "Versión \(v) (\(b))")
+    }
+    static var aboutCopyright: String { 
+        let year = Calendar.current.component(.year, from: Date())
+        return at("© \(year) Sebastián Vidal", "© \(year) Sebastián Vidal") 
+    }
     static var aboutHelp: String { at("Technical Information", "Información técnica") }
     
     static var startWork: String { at("Start Working", "Iniciar trabajo") }

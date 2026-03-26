@@ -6,12 +6,14 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 
 - **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Celebrating). **Imminent meetings** (selector for 5, 10, 15 mins) are displayed on his eyes with an orange countdown. **Contextual icons** (video, calendar, bolt) appear on his face to show the current activity type.
 - **⏱️ Infinite Work Sessions**: Open-ended stopwatch sessions with no time limit.
-- **📅 Smart Meeting Alerts**: Automatically detects upcoming meetings. **Auto-Start** logic activates the session and timer at the exact start time. The header dynamically shows the **Next Event** (within 12h) before the countdown begins.
+- **📅 Smart Meeting Alerts**: Automatically detects upcoming meetings. **Auto-Start** logic activates the session and timer at the exact start time. The system menu bar dynamically shows the **Next Event** (within 12h) before the countdown begins, with a toggle in settings.
 - **📁 Grouped Meetings**: Clear visual separation for Today/Tomorrow with **engaging empty states**.
 - **📍 Activity Indicators**: Custom-built historical calendar with **dot indicators** for days with focus sessions or notes.
 - **💎 Premium UI Consistency**: Normalized headers across all sections for a more professional and seamless experience.
-- **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, **Data Management** (JSON Export/Import), Buddy Config, and Calendars.
- Browser and Calendar selection are now integrated into the main **Settings** view, avoiding redundant navigation.
+- **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, **Data Management** (JSON Export/Import), Buddy Config, and Calendars. Browser and Calendar selection are now integrated into the main **Settings** view, avoiding redundant navigation.
+- **📦 SwiftData Persistence**: High-performance session history using modern SwiftData architecture, with automatic migration from legacy `UserDefaults`.
+- **✨ Visual Feedback**: Premium **Confetti celebration** effect when completing goals or achieving focus milestones.
+- ** Context-Aware Reminders**: Blinky offers smart, real-time advice based on your focus time and meeting frequency (e.g., detecting back-to-back meetings).
 - **🔄 Robust Sync Now**: The "Sync Now" button forces a re-read of all calendar sources (iCloud, Google Calendar, etc.) with a smooth **rotation animation** for visual feedback.
 - **⭕️ Progress Ring**: Visual progress indicator around Blinky only appears during calendar meetings.
 - **💬 Smart Reminders**: Blinky shows contextual motivational messages during active sessions.
