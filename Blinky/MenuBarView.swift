@@ -534,7 +534,8 @@ struct EventRow: View {
             timer.start(goal: event.title ?? "", 
                         startDate: event.startDate, 
                         endDate: event.endDate, 
-                        hasLink: isMeeting)
+                        hasLink: isMeeting,
+                        eventID: event.eventIdentifier)
         }) {
             HStack(spacing: 12) {
                 Image(systemName: isMeeting ? "video.fill" : "calendar")

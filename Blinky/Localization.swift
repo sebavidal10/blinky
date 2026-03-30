@@ -37,8 +37,8 @@ class Localization {
     static var unnamedSession: String { at("Unnamed Session", "Sesión sin nombre") }
     static var aboutTitle: String { at("About Blinky", "Acerca de Blinky") }
     static var aboutVersion: String { 
-        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1"
-        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "5"
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.2"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "8"
         return at("Version \(v) (\(b))", "Versión \(v) (\(b))")
     }
     static var aboutCopyright: String { 

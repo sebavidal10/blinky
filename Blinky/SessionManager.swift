@@ -40,6 +40,7 @@ class SessionManager: ObservableObject {
     @Published var meetingStartDate: Date? = nil
     @Published var meetingEndDate: Date? = nil
     @Published var meetingHasLink: Bool = false
+    @Published var currentMeetingID: String? = nil
     @Published var meetingCountdown: String? = nil
     @Published var upcomingMeeting: EKEvent? = nil
     @Published var discardedMeetingIDs: Set<String> = []
@@ -191,7 +192,7 @@ class SessionManager: ObservableObject {
         // If there was an active session, it might be messy to reload it mid-way.
     }
 
-    func start(goal: String? = nil, startDate: Date? = nil, endDate: Date? = nil, hasLink: Bool = false) {
+    func start(goal: String? = nil, startDate: Date? = nil, endDate: Date? = nil, hasLink: Bool = false, eventID: String? = nil) {
         if let goal = goal {
             self.currentGoal = goal
         }
@@ -202,6 +203,7 @@ class SessionManager: ObservableObject {
                 self.meetingStartDate = start
                 self.meetingEndDate = end
                 self.meetingHasLink = hasLink
+                self.currentMeetingID = eventID
                 self.isInfiniteSession = false
                 self.phase = .meeting
                 
@@ -240,6 +242,7 @@ class SessionManager: ObservableObject {
         phase = .idle
         secondsRemaining = 0
         secondsElapsed = 0
+        currentMeetingID = nil
         updateMood()
     }
 
@@ -250,6 +253,11 @@ class SessionManager: ObservableObject {
             durationInMinutes: max(1, duration / 60),
             type: phase == .meeting ? .meeting : .focus
         )
+        
+        if phase == .meeting, let id = currentMeetingID {
+            discardedMeetingIDs.insert(id)
+            UserDefaults.standard.set(Array(discardedMeetingIDs), forKey: "discardedMeetingIDs")
+        }
         
         modelContext?.insert(session)
         sessionsHistory.insert(session, at: 0)
@@ -387,7 +395,8 @@ class SessionManager: ObservableObject {
                 start(goal: event.title, 
                       startDate: event.startDate, 
                       endDate: event.endDate, 
-                      hasLink: hasMeetingLink(event))
+                      hasLink: hasMeetingLink(event),
+                      eventID: event.eventIdentifier)
                 upcomingMeeting = nil
                 meetingCountdown = nil
                 return
