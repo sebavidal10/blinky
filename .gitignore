@@ -41,7 +41,17 @@ Icon?
 build/
 *.o
 *.d
+DerivedData/
 
 # Credentials
 *.pem
 *.key
+
+# Temporary files
+*.swp
+*.lock
+.DS_Store
+
+# User-specific files
+*.xcuserdatad
+*.xcuserstate

@@ -52,15 +52,8 @@ class SessionManager: ObservableObject {
     @Published var secondsElapsed: Int = 0
     @Published var isRunning: Bool = false
 
-    // MARK: - Stats (persisted)
-    @Published var totalSessionsToday: Int = 0 {
-        didSet { UserDefaults.standard.set(totalSessionsToday, forKey: "totalSessionsToday") }
-    }
     @Published var totalSessionsAllTime: Int = 0 {
         didSet { UserDefaults.standard.set(totalSessionsAllTime, forKey: "totalSessionsAllTime") }
-    }
-    @Published var currentStreak: Int = 0 {
-        didSet { UserDefaults.standard.set(currentStreak, forKey: "currentStreak") }
     }
     @Published var sessionsHistory: [FocusSession] = []
     
@@ -113,7 +106,6 @@ class SessionManager: ObservableObject {
         requestNotificationPermission()
         checkDayReset()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: NSNotification.Name("BlinkyDataImported"), object: nil)
         startTicking()
         
         // Migration from UserDefaults
@@ -126,19 +118,8 @@ class SessionManager: ObservableObject {
         let calendar = Calendar.current
         
         if !calendar.isDateInToday(lastDate) {
-            // New day detected
-            if totalSessionsToday > 0 {
-                // If we worked yesterday, increment streak
-                currentStreak += 1
-            } else if lastDate != Date.distantPast && !calendar.isDateInYesterday(lastDate) {
-                // If we missed more than one day, reset streak
-                currentStreak = 0
-            }
-            
-            totalSessionsToday = 0
             discardedMeetingIDs.removeAll()
             UserDefaults.standard.removeObject(forKey: "discardedMeetingIDs")
-            
             ud.set(Date(), forKey: "lastActiveDate")
         }
     }
@@ -187,10 +168,6 @@ class SessionManager: ObservableObject {
         }
     }
     
-    @objc func reloadData() {
-        loadHistory()
-        // If there was an active session, it might be messy to reload it mid-way.
-    }
 
     func start(goal: String? = nil, startDate: Date? = nil, endDate: Date? = nil, hasLink: Bool = false, eventID: String? = nil) {
         if let goal = goal {
@@ -261,7 +238,6 @@ class SessionManager: ObservableObject {
         
         modelContext?.insert(session)
         sessionsHistory.insert(session, at: 0)
-        totalSessionsToday += 1
         totalSessionsAllTime += 1
         saveHistory()
         
@@ -300,12 +276,19 @@ class SessionManager: ObservableObject {
     func deleteSession(id: UUID) {
         guard let index = sessionsHistory.firstIndex(where: { $0.id == id }) else { return }
         let session = sessionsHistory[index]
-        if Calendar.current.isDateInToday(session.date) {
-            totalSessionsToday = max(0, totalSessionsToday - 1)
-        }
         totalSessionsAllTime = max(0, totalSessionsAllTime - 1)
         modelContext?.delete(session)
         sessionsHistory.remove(at: index)
+        saveHistory()
+    }
+
+    func clearHistory() {
+        guard let context = modelContext else { return }
+        for session in sessionsHistory {
+            context.delete(session)
+        }
+        sessionsHistory.removeAll()
+        totalSessionsAllTime = 0
         saveHistory()
     }
 
@@ -438,9 +421,7 @@ class SessionManager: ObservableObject {
     private func loadHistory() {
         let ud = UserDefaults.standard
         currentGoal = ud.string(forKey: "currentGoal") ?? ""
-        totalSessionsToday = ud.integer(forKey: "totalSessionsToday")
         totalSessionsAllTime = ud.integer(forKey: "totalSessionsAllTime")
-        currentStreak = ud.integer(forKey: "currentStreak")
         
         guard let modelContext = modelContext else { return }
         

@@ -128,20 +128,41 @@ struct BuddyView: View {
                 
                 if showNoteInput {
                     VStack(spacing: 8) {
-                        TextField(Localization.at("Quick Note...", "Nota rápida..."), text: $noteText)
-                            .textFieldStyle(.plain)
-                            .font(.system(size: 11, weight: .medium))
-                            .padding(8)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(.ultraThinMaterial))
-                            .focused($isNoteFocused)
-                            .onSubmit {
+                        HStack(alignment: .bottom, spacing: 8) {
+                            ZStack(alignment: .topLeading) {
+                                if noteText.isEmpty {
+                                    Text(Localization.at("Quick Note...", "Nota rápida..."))
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundColor(.secondary.opacity(0.5))
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                }
+                                
+                                TextEditor(text: $noteText)
+                                    .font(.system(size: 11, weight: .medium))
+                                    .scrollContentBackground(.hidden)
+                                    .padding(4)
+                                    .frame(minHeight: 32, maxHeight: 80)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(.ultraThinMaterial))
+                                    .focused($isNoteFocused)
+                            }
+                            
+                            Button(action: {
                                 if !noteText.isEmpty {
                                     NotesManager.shared.addNote(noteText)
                                     noteText = ""
                                 }
                                 withAnimation { showNoteInput = false }
+                            }) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(noteText.isEmpty ? .secondary.opacity(0.3) : .accentColor)
                             }
-                            .frame(width: 140)
+                            .buttonStyle(.plain)
+                            .disabled(noteText.isEmpty)
+                            .padding(.bottom, 2)
+                        }
+                        .frame(width: 180)
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .padding(.top, 4)

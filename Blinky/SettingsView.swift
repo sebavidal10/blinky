@@ -11,6 +11,7 @@ struct SettingsView: View {
     @EnvironmentObject var timer: SessionManager
     @ObservedObject var buddySettings = BuddySettings.shared
     @ObservedObject var calendar = CalendarManager.shared
+    @State private var showingClearHistoryAlert = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,50 +65,7 @@ struct SettingsView: View {
                     .background(.ultraThinMaterial)
                     .cornerRadius(16)
                     
-                    // 2. Data Management
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text(Localization.at("Data Management", "Gestión de Datos"))
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.secondary)
-                        
-                        VStack(spacing: 12) {
-                            HStack(spacing: 12) {
-                                Button(action: {
-                                    DataPortalManager.shared.exportData()
-                                }) {
-                                    HStack {
-                                        Image(systemName: "square.and.arrow.up")
-                                        Text(Localization.at("Export Info", "Exportar Info"))
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                .controlSize(.large)
-                                
-                                Button(action: {
-                                    DataPortalManager.shared.importData()
-                                }) {
-                                    HStack {
-                                        Image(systemName: "square.and.arrow.down")
-                                        Text(Localization.at("Import Info", "Importar Info"))
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                .controlSize(.large)
-                            }
-                            
-                            Text(Localization.at("Export or import your sessions, notes and settings as a JSON file.", "Exporta o importa tus sesiones, notas y ajustes como un archivo JSON."))
-                                .font(.system(size: 11))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(16)
-
-                    // 3. Buddy Configuration
+                    // 2. Buddy Configuration
                     VStack(alignment: .leading, spacing: 16) {
                         Text(Localization.buddyConfiguration)
                             .font(.system(size: 13, weight: .bold))
@@ -147,6 +105,7 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(.ultraThinMaterial)
                     .cornerRadius(16)
+
 
                     // 4. Calendar Selection
                     VStack(alignment: .leading, spacing: 16) {

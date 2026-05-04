@@ -70,12 +70,10 @@ final class SessionManagerTests: XCTestCase {
         timer.start()
         timer.secondsElapsed = 600 // 10 minutes
         
-        let initialTodayCount = timer.totalSessionsToday
         let initialHistoryCount = timer.sessionsHistory.count
         
         timer.finishSession()
         
-        XCTAssertEqual(timer.totalSessionsToday, initialTodayCount + 1)
         XCTAssertEqual(timer.sessionsHistory.count, initialHistoryCount + 1)
         XCTAssertEqual(timer.phase, .idle)
     }
@@ -108,7 +106,8 @@ final class SessionManagerTests: XCTestCase {
         
         timer.checkDayReset()
         
-        XCTAssertEqual(timer.totalSessionsToday, 0)
+        // sessionsHistory was empty, so streak should be 0 or unchanged if it was already 0
+        XCTAssertEqual(timer.currentStreak, 0)
     }
 
     func testStreakIncrementOnNewDay() {
@@ -116,7 +115,10 @@ final class SessionManagerTests: XCTestCase {
         let yesterday = calendar.date(byAdding: .day, value: -1, to: Date())!
         
         UserDefaults.standard.set(yesterday, forKey: "lastActiveDate")
-        timer.totalSessionsToday = 5
+        
+        // Add a session for yesterday
+        let session = FocusSession(id: UUID(), date: yesterday, goal: "Worked Yesterday", durationInMinutes: 30)
+        timer.sessionsHistory.append(session)
         
         timer.checkDayReset()
         

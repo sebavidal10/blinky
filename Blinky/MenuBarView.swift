@@ -100,41 +100,33 @@ struct MenuBarView: View {
     private var timerMainView: some View {
         VStack(spacing: 0) {
             // Header
-            ViewHeader(title: "Blinky", rightContent: {
-                Text("\(Localization.today): \(timer.totalSessionsToday) ⚡️")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+            ViewHeader(titleView: {
+                HStack(spacing: 8) {
+                    RobotFace(mood: timer.mood, 
+                              isRunning: timer.isRunning, 
+                              phase: timer.phase,
+                              isBlinking: false,
+                              isInsomniaActive: buddySettings.isInsomniaEnabled)
+                        .scaleEffect(0.35)
+                        .frame(width: 30, height: 30)
+                    
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(timer.phase == .idle ? Localization.readyToWork : timer.mood.label)
+                            .font(.system(size: 12, weight: .bold))
+                        
+                        if timer.phase != .idle {
+                            Text(timer.currentGoal.isEmpty ? Localization.unnamedSession : timer.currentGoal)
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+            }, rightContent: {
+                EmptyView()
             })
 
 
-            // Pet mood / Robot State
-            HStack(spacing: 12) {
-                RobotFace(mood: timer.mood, 
-                          isRunning: timer.isRunning, 
-                          phase: timer.phase,
-                          isBlinking: false,
-                          isInsomniaActive: buddySettings.isInsomniaEnabled)
-                    .scaleEffect(0.5)
-                    .frame(width: 44, height: 44)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(timer.phase == .idle ? Localization.readyToWork : timer.mood.label)
-                        .font(.system(size: 15, weight: .bold))
-                    
-                    if timer.phase != .idle {
-                        Text(timer.currentGoal.isEmpty ? Localization.unnamedSession : timer.currentGoal)
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text(Localization.robotWaiting)
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
 
             ZStack {
                 VStack(spacing: 0) {
@@ -196,15 +188,7 @@ struct MenuBarView: View {
                                 timer.currentGoal = ""
                                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { isPreparingSession = true } 
                             }) {
-                                HStack(spacing: 16) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color.accentColor.opacity(0.1))
-                                            .frame(width: 44, height: 44)
-                                        Image(systemName: "bolt.fill")
-                                            .font(.system(size: 20, weight: .bold))
-                                            .foregroundColor(.accentColor)
-                                    }
+                                HStack(spacing: 0) {
                                     
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(Localization.startWork)
@@ -272,14 +256,16 @@ struct MenuBarView: View {
                                 
                                 // Line 1: ICON + Name
                                 HStack(spacing: 12) {
-                                    ZStack {
-                                        Circle()
-                                            .fill((isMeet ? Color.teal : (timer.phase == .meeting ? Color.secondary : Color.blue)).opacity(0.1))
-                                            .frame(width: 28, height: 28)
-                                        
-                                        Image(systemName: isMeet ? "video.fill" : (timer.phase == .meeting ? "calendar" : "bolt.fill"))
-                                            .font(.system(size: 12, weight: .bold))
-                                            .foregroundColor(isMeet ? .teal : (timer.phase == .meeting ? .secondary : .blue))
+                                    if timer.phase == .meeting {
+                                        ZStack {
+                                            Circle()
+                                                .fill((isMeet ? Color.teal : Color.secondary).opacity(0.1))
+                                                .frame(width: 28, height: 28)
+                                            
+                                            Image(systemName: isMeet ? "video.fill" : "calendar")
+                                                .font(.system(size: 12, weight: .bold))
+                                                .foregroundColor(isMeet ? .teal : .secondary)
+                                        }
                                     }
                                     
                                     Text(timer.currentGoal.isEmpty ? Localization.unnamedSession : timer.currentGoal)
@@ -305,7 +291,7 @@ struct MenuBarView: View {
                                                 .foregroundColor(.secondary)
                                         }
                                     }
-                                    .padding(.leading, 40) // Align with text above
+                                    .padding(.leading, timer.phase == .meeting ? 40 : 0) // Align with text above
                                     
                                     Spacer()
                                     
@@ -432,7 +418,7 @@ struct MenuBarView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.top, 4)
+            .padding(.top, 12)
 
         }
         .frame(maxWidth: .infinity)
@@ -593,23 +579,36 @@ struct EventRow: View {
 
 struct ViewHeader<Content: View>: View {
     let title: String
+    let titleView: AnyView?
     let rightContent: () -> Content
     
     init(title: String, @ViewBuilder rightContent: @escaping () -> Content) {
         self.title = title
+        self.titleView = nil
+        self.rightContent = rightContent
+    }
+    
+    init<V: View>(@ViewBuilder titleView: @escaping () -> V, @ViewBuilder rightContent: @escaping () -> Content) {
+        self.title = ""
+        self.titleView = AnyView(titleView())
         self.rightContent = rightContent
     }
     
     init(title: String) where Content == EmptyView {
         self.title = title
+        self.titleView = nil
         self.rightContent = { EmptyView() }
     }
     
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text(title)
-                    .font(.system(size: 14, weight: .bold))
+                if let titleView = titleView {
+                    titleView
+                } else {
+                    Text(title)
+                        .font(.system(size: 14, weight: .bold))
+                }
                 Spacer()
                 rightContent()
             }

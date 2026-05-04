@@ -65,4 +65,4 @@ This skill ensures that every code modification maintains the structural integri
 - **Meeting Automation**: `SessionManager` includes **Auto-Start** logic. If a meeting on the user's calendar begins, it automatically transitions to `.meeting` mode and starts the timer. Ensure the `Aura` in `BuddyView` is teal during meetings.
 - **Meeting Countdown**: Discrete threshold (5, 10, 15 min picker) displayed on eyes.
 - **Insomnia Mode**: Power management assertions to prevent sleep. **Forced to enabled by default** on every app launch.
-- **Automated Build Versioning**: Whenever finishing a task that requires compiling a new release or submitting to the App Store, you MUST remember to automatically increment the `CURRENT_PROJECT_VERSION` (build number) in `project.pbxproj`. Do not change the marketing version unless explicitly requested.
+- **Automated Build Versioning**: Whenever finishing a task that requires compiling a new release or submitting to the App Store, you MUST remember to automatically increment the `CURRENT_PROJECT_VERSION` (build number) in `project.pbxproj`. **CRITICAL: Always update the version before finalizing a session.**

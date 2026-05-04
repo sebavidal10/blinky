@@ -37,8 +37,8 @@ class Localization {
     static var unnamedSession: String { at("Unnamed Session", "Sesión sin nombre") }
     static var aboutTitle: String { at("About Blinky", "Acerca de Blinky") }
     static var aboutVersion: String { 
-        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.2"
-        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "8"
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.3"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "11"
         return at("Version \(v) (\(b))", "Versión \(v) (\(b))")
     }
     static var aboutCopyright: String { 
@@ -101,7 +101,6 @@ class Localization {
     static var achievements: String { at("History", "Historial") }
     static var statToday: String { at("Today", "Hoy") }
     static var statTotal: String { at("Total", "Total") }
-    static var statStreak: String { at("Streak", "Racha") }
     static var recentHistory: String { at("SESSIONS", "SESIONES") }
     static var noSessions: String { at("No sessions recorded yet.\nStart your first session!", "Aún no hay sesiones registradas.\n¡Empieza tu primera sesión!") }
     
@@ -184,7 +183,7 @@ class Localization {
     // Quick Notes
     static var notesTitle: String { at("Quick Notes", "Notas Rápidas") }
     static var noNotes: String { at("No notes yet.\nJot down your thoughts!", "Aún no hay notas.\n¡Escribe tus pensamientos!") }
-    static var typeSomething: String { at("Type something and press Enter...", "Escribe algo y pulsa Enter...") }
+    static var typeSomething: String { at("Type something...", "Escribe algo...") }
     static var quickNoteShortcut: String { at("New Note", "Nueva Nota") }
     static var nextEvent: String { at("Next Event", "Próximo") }
     

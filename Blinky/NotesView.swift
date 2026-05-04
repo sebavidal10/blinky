@@ -18,17 +18,34 @@ struct NotesView: View {
             ViewHeader(title: Localization.notesTitle)
             
             // New Note Input
-            VStack(spacing: 12) {
-                TextField(Localization.typeSomething, text: $newNoteText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 13, weight: .medium))
-                    .padding(12)
-                    .background(Color.primary.opacity(0.06))
-                    .cornerRadius(10)
-                    .focused($isInputFocused)
-                    .onSubmit {
-                        addNote()
+            HStack(alignment: .bottom, spacing: 12) {
+                ZStack(alignment: .topLeading) {
+                    if newNoteText.isEmpty {
+                        Text(Localization.typeSomething)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.5))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
                     }
+                    
+                    TextEditor(text: $newNoteText)
+                        .font(.system(size: 13, weight: .medium))
+                        .scrollContentBackground(.hidden)
+                        .padding(8)
+                        .frame(minHeight: 40, maxHeight: 120)
+                        .background(Color.primary.opacity(0.06))
+                        .cornerRadius(12)
+                        .focused($isInputFocused)
+                }
+                
+                Button(action: addNote) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(newNoteText.isEmpty ? .secondary.opacity(0.3) : .accentColor)
+                }
+                .buttonStyle(.plain)
+                .disabled(newNoteText.isEmpty)
+                .padding(.bottom, 6)
             }
             .padding(16)
             
@@ -106,16 +123,20 @@ struct NoteRow: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(note.text)
-                    .font(.system(size: 13))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primary)
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                Text(formatter.string(from: note.date))
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary.opacity(0.6))
+                HStack {
+                    Image(systemName: "clock")
+                        .font(.system(size: 9))
+                    Text(formatter.string(from: note.date))
+                        .font(.system(size: 10))
+                }
+                .foregroundColor(.secondary.opacity(0.6))
             }
             
             Spacer()
@@ -145,8 +166,8 @@ struct NoteRow: View {
     
     private let formatter: DateFormatter = {
         let f = DateFormatter()
-        f.dateStyle = .none
-        f.timeStyle = .short
+        f.dateFormat = "d MMM, HH:mm"
+        f.locale = Locale(identifier: Localization.resolvedLanguage == "es" ? "es_ES" : "en_US")
         return f
     }()
 }
