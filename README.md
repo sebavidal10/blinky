@@ -25,7 +25,7 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 - **📝 Quick Notes**: Jot down thoughts instantly from the Buddy's floating UI or manage them in the dedicated **Notes** tab in the menu bar.
 - **🗑 Secure Management**: All deletions for sessions and notes are guarded by a **Confirmation Dialog**, ensuring stability even during real-time timer updates.
 - **🌐 Bilingual**: Full English and Spanish localization.
-- **🔋 Native Performance**: Built with SwiftUI and AppKit for maximum performance and minimal resource usage.
+- **🔋 Native Performance & Efficiency**: Built with SwiftUI and AppKit for maximum performance. Incorporates deep optimizations like `DateFormatter` caching and `O(1)` calendar polling to ensure **zero battery drain** while running continuously in the background.
 
 ## 🛠 Technology Stack
 

@@ -166,9 +166,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
         } else if let next = upcomingMeeting, BuddySettings.shared.showNextEventInMenuBar {
             // Idle but with an upcoming meeting today/soon (If enabled in settings)
-            let df = DateFormatter()
-            df.dateFormat = "HH:mm"
-            let timeStr = df.string(from: next.startDate)
+            let timeStr = AppDelegate.timeFormatter.string(from: next.startDate)
             let titleText = "\(Localization.nextEvent): \(next.title ?? "") (\(timeStr) hrs)"
             
             let attrsGray: [NSAttributedString.Key: Any] = [
@@ -230,4 +228,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func handleWake() {
         SessionManager.shared.checkDayReset()
     }
+    
+    private static let timeFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "HH:mm"
+        return df
+    }()
 }

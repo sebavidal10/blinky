@@ -39,6 +39,11 @@ This skill ensures that every code modification maintains the structural integri
    - After *every* edit to a `.swift` file, you MUST perform a visual check of the surrounding scope to ensure all braces are balanced.
    - If in doubt, use `run_command` with `swiftc -parse <file_path>` to catch structural errors, even if it reports missing module errors (it will still report extraneous braces first).
 
+7. **Performance & Memory (DateFormatter)**:
+   - `DateFormatter` instantiations are notoriously expensive in Swift. **NEVER** instantiate them inside computed properties like `body` or properties that re-evaluate frequently.
+   - Always declare them as `static let` or `fileprivate static let` within the struct or class.
+   - For locale changes, simply set `FormatterName.locale = Locale(...)` before calling `.string(from:)`.
+
 ## Error Prevention Workflow
 
 1. **Plan**: Identify the exact lines.

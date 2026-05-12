@@ -21,6 +21,7 @@ struct MenuBarView: View {
     enum AppView {
         case timer
         case stats
+        case system
         case notes
         case settings
     }
@@ -38,6 +39,9 @@ struct MenuBarView: View {
             case .notes:
                 NotesView()
                     .environmentObject(timer)
+                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+            case .system:
+                SystemStatsView()
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
             case .settings:
                 SettingsView()
@@ -61,6 +65,10 @@ struct MenuBarView: View {
                 
                 TabButton(icon: "square.and.pencil", isSelected: currentView == .notes) {
                     currentView = .notes
+                }
+
+                TabButton(icon: "memorychip", isSelected: currentView == .system) {
+                    currentView = .system
                 }
 
                 TabButton(icon: "gearshape.fill", isSelected: currentView == .settings) {
@@ -364,10 +372,8 @@ struct MenuBarView: View {
                                         // Today
                                         VStack(alignment: .leading, spacing: 12) {
                                             let todayLabelWithDate: String = {
-                                                let formatter = DateFormatter()
-                                                formatter.dateFormat = "d MMM"
-                                                formatter.locale = Locale(identifier: Localization.resolvedLanguage)
-                                                let dateStr = formatter.string(from: Date()).capitalized
+                                                MenuBarView.shortDateFormatter.locale = Locale(identifier: Localization.resolvedLanguage)
+                                                let dateStr = MenuBarView.shortDateFormatter.string(from: Date()).capitalized
                                                 return "\(Localization.todayLabel), \(dateStr)"
                                             }()
                                             
@@ -388,11 +394,9 @@ struct MenuBarView: View {
                                         // Tomorrow
                                         VStack(alignment: .leading, spacing: 12) {
                                             let tomorrowLabel: String = {
-                                                let formatter = DateFormatter()
-                                                formatter.dateFormat = "EEEE, d MMM"
-                                                formatter.locale = Locale(identifier: Localization.resolvedLanguage)
+                                                MenuBarView.tomorrowDateFormatter.locale = Locale(identifier: Localization.resolvedLanguage)
                                                 let tomorrowDate = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
-                                                return formatter.string(from: tomorrowDate).capitalized
+                                                return MenuBarView.tomorrowDateFormatter.string(from: tomorrowDate).capitalized
                                             }()
                                             
                                             Text(tomorrowLabel)
@@ -438,6 +442,19 @@ struct MenuBarView: View {
     func handleMainButton() {
         timer.startStop()
     }
+    
+    // Shared Formatters for Performance
+    fileprivate static let shortDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d MMM"
+        return f
+    }()
+    
+    fileprivate static let tomorrowDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE, d MMM"
+        return f
+    }()
 }
 
 struct EmptyDayMessage: View {
@@ -529,7 +546,7 @@ struct EventRow: View {
                     .foregroundColor(isMeeting ? .teal : .secondary)
                     .frame(width: 20)
                 
-                Text(formatter.string(from: event.startDate))
+                Text(EventRow.formatter.string(from: event.startDate))
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: 45, alignment: .leading)
                 
@@ -570,7 +587,7 @@ struct EventRow: View {
         }
     }
     
-    private let formatter: DateFormatter = {
+    private static let formatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "HH:mm"
         return f

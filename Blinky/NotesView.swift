@@ -133,7 +133,7 @@ struct NoteRow: View {
                 HStack {
                     Image(systemName: "clock")
                         .font(.system(size: 9))
-                    Text(formatter.string(from: note.date))
+                    Text(NoteRow.formatter.string(from: note.date))
                         .font(.system(size: 10))
                 }
                 .foregroundColor(.secondary.opacity(0.6))
@@ -164,7 +164,7 @@ struct NoteRow: View {
         }
     }
     
-    private let formatter: DateFormatter = {
+    private static let formatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "d MMM, HH:mm"
         f.locale = Locale(identifier: Localization.resolvedLanguage == "es" ? "es_ES" : "en_US")

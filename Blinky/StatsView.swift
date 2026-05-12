@@ -212,10 +212,8 @@ struct StatsView: View {
     // MARK: - Subviews & Data
     
     private var dateDisplayString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, d MMM"
-        formatter.locale = Locale(identifier: Localization.resolvedLanguage == "es" ? "es_ES" : "en_US")
-        return formatter.string(from: selectedDate).capitalized
+        StatsView.dateDisplayFormatter.locale = Locale(identifier: Localization.resolvedLanguage == "es" ? "es_ES" : "en_US")
+        return StatsView.dateDisplayFormatter.string(from: selectedDate).capitalized
     }
     
     private var dailyTotal: Int {
@@ -256,6 +254,12 @@ struct StatsView: View {
             Spacer(minLength: 40)
         }
     }
+    
+    fileprivate static let dateDisplayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, d MMM"
+        return formatter
+    }()
 }
 
 // MARK: - Components
@@ -348,9 +352,20 @@ struct SessionRow: View {
     }
     
     func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = showDate ? "d MMM, HH:mm" : "HH:mm"
+        let formatter = showDate ? SessionRow.listDateFormatter : SessionRow.timeFormatter
         formatter.locale = Locale(identifier: Localization.resolvedLanguage == "es" ? "es_ES" : "en_US")
         return formatter.string(from: date)
     }
+    
+    private static let listDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM, HH:mm"
+        return formatter
+    }()
+    
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
 }

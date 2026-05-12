@@ -89,12 +89,16 @@ struct CalendarDotsView: View {
     }
     
     private var monthYearString: String {
+        CalendarDotsView.monthYearFormatter.locale = Locale(identifier: Localization.resolvedLanguage)
+        let date = calendar.date(byAdding: .month, value: monthOffset, to: Date()) ?? Date()
+        return CalendarDotsView.monthYearFormatter.string(from: date).capitalized
+    }
+    
+    private static let monthYearFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
-        formatter.locale = Locale(identifier: Localization.resolvedLanguage)
-        let date = calendar.date(byAdding: .month, value: monthOffset, to: Date()) ?? Date()
-        return formatter.string(from: date).capitalized
-    }
+        return formatter
+    }()
     
     private func generateDays() -> [Date?] {
         let currentMonth = calendar.date(byAdding: .month, value: monthOffset, to: Date()) ?? Date()

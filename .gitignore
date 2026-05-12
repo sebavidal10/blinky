@@ -55,3 +55,11 @@ DerivedData/
 # User-specific files
 *.xcuserdatad
 *.xcuserstate
+
+# Workspace settings
+project.xcworkspace/
+xcuserdata/
+
+# AI Agent metadata
+.agent/
+.gemini/

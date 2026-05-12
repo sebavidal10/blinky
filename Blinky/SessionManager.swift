@@ -358,15 +358,12 @@ class SessionManager: ObservableObject {
         
         // Find the next meeting starting within the next 12 hours
         let twelveHours: TimeInterval = 12 * 3600
-        let next = calendar.events
-            .filter { 
-                $0.endDate > now && 
-                !$0.isAllDay && 
-                !discardedMeetingIDs.contains($0.eventIdentifier) &&
-                $0.startDate.timeIntervalSince(now) <= twelveHours
-            }
-            .sorted { $0.startDate < $1.startDate }
-            .first
+        let next = calendar.events.first(where: { 
+            $0.endDate > now && 
+            !$0.isAllDay && 
+            !discardedMeetingIDs.contains($0.eventIdentifier) &&
+            $0.startDate.timeIntervalSince(now) <= twelveHours
+        })
         
         if let event = next {
             let diff = event.startDate.timeIntervalSince(now)

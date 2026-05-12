@@ -133,6 +133,13 @@ class Localization {
     static var countdownThreshold: String { at("Countdown", "Cuenta regresiva") }
     static var minutesBefore: String { at("minutes before", "minutos antes") }
 
+    // System Stats
+    static var systemStats: String { at("System Health", "Salud del Sistema") }
+    static var ramUsage: String { at("Memory (RAM)", "Memoria (RAM)") }
+    static var cpuUsage: String { at("Processor (CPU)", "Procesador (CPU)") }
+    static var diskUsage: String { at("Storage (Disk)", "Almacenamiento") }
+    static var uptime: String { at("Uptime", "Tiempo de actividad") }
+
     static func remainingTime(_ minutes: Int) -> String {
         return at("\(minutes) min remaining", "\(minutes) min restantes")
     }
