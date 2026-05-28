@@ -64,8 +64,7 @@ This skill ensures that every code modification maintains the structural integri
 
 ## Key Implementation Details
 
-- **Data Management**: A `DataPortalManager` handles mass `UserDefaults` Export/Import via JSON files. **Always place Data Management in its own dedicated card (caluga) in Settings.**
-- **UI Architecture**: Maintain a segmented layout in Settings using independent `.ultraThinMaterial` cards for different logic groups (General, Data, Buddy, etc.). Ensure vertical alignment for all controls, avoiding ad-hoc padding that breaks the grid.
+- **UI Architecture**: Maintain a segmented layout in Settings using independent `.ultraThinMaterial` cards for different logic groups (General, Buddy, etc.). Ensure vertical alignment for all controls, avoiding ad-hoc padding that breaks the grid. In the achievements/history views (`StatsView`), keep the interface compact and clean by displaying lists/calendars directly and avoiding large/redundant summary cards (like 'Sessions' and 'Focus' cards).
 - **Contextual Icons**: Dynamic SFSymbols appear as circular overlays in the **bottom-left** of Blinky's outer shell, mirroring the pencil button on the right.
 - **Meeting Automation**: `SessionManager` includes **Auto-Start** logic. If a meeting on the user's calendar begins, it automatically transitions to `.meeting` mode and starts the timer. Ensure the `Aura` in `BuddyView` is teal during meetings.
 - **Meeting Countdown**: Discrete threshold (5, 10, 15 min picker) displayed on eyes.

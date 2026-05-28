@@ -43,7 +43,7 @@ class SystemMonitor: ObservableObject {
         timer = nil
     }
     
-    private func updateStats() {
+    func updateStats() {
         updateCPU()
         updateRAM()
         updateDisk()
@@ -115,11 +115,13 @@ class SystemMonitor: ObservableObject {
     }
     
     private func updateDisk() {
-        let fileURL = URL(fileURLWithPath: "/")
+        let fileURL = URL(fileURLWithPath: NSHomeDirectory())
         do {
-            let values = try fileURL.resourceValues(forKeys: [.volumeAvailableCapacityKey, .volumeTotalCapacityKey])
-            if let capacity = values.volumeTotalCapacity, let available = values.volumeAvailableCapacity {
-                let used = capacity - available
+            let keys: Set<URLResourceKey> = [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey, .volumeAvailableCapacityKey]
+            let values = try fileURL.resourceValues(forKeys: keys)
+            if let capacity = values.volumeTotalCapacity {
+                let available = values.volumeAvailableCapacityForImportantUsage ?? Int64(values.volumeAvailableCapacity ?? 0)
+                let used = Int64(capacity) - available
                 self.diskTotalGB = Double(capacity) / 1_073_741_824
                 self.diskUsedGB = Double(used) / 1_073_741_824
                 self.diskUsage = Double(used) / Double(capacity)

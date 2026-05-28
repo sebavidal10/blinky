@@ -167,7 +167,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else if let next = upcomingMeeting, BuddySettings.shared.showNextEventInMenuBar {
             // Idle but with an upcoming meeting today/soon (If enabled in settings)
             let timeStr = AppDelegate.timeFormatter.string(from: next.startDate)
-            let titleText = "\(Localization.nextEvent): \(next.title ?? "") (\(timeStr) hrs)"
+            let rawTitle = next.title ?? ""
+            let limit = 20
+            let truncatedTitle = rawTitle.count > limit ? String(rawTitle.prefix(limit)) + "..." : rawTitle
+            let titleText = "\(Localization.nextEvent): \(timeStr) \(truncatedTitle)"
             
             let attrsGray: [NSAttributedString.Key: Any] = [
                 .font: NSFont.systemFont(ofSize: 11, weight: .medium),

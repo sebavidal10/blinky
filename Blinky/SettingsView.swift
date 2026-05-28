@@ -11,7 +11,6 @@ struct SettingsView: View {
     @EnvironmentObject var timer: SessionManager
     @ObservedObject var buddySettings = BuddySettings.shared
     @ObservedObject var calendar = CalendarManager.shared
-    @State private var showingClearHistoryAlert = false
 
     var body: some View {
         VStack(spacing: 0) {

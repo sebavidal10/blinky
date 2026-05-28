@@ -11,8 +11,8 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 - **📁 Grouped Meetings**: Clear visual separation for Today/Tomorrow with **engaging empty states**.
 - **📍 Activity Indicators**: Custom-built historical calendar with **dot indicators** for days with focus sessions or notes.
 - **💎 Premium UI Consistency**: Normalized headers across all sections for a more professional and seamless experience.
-- **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, Buddy Config, **Data Management** (JSON Export/Import & Clear History), and Calendars. Browser and Calendar selection are now integrated into the main **Settings** view, avoiding redundant navigation.
-- **📈 History Views**: Toggle between a daily calendar view and a **full list view** to track all your past sessions effortlessly.
+- **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, Buddy Config, and Calendars. Browser and Calendar selection are now integrated into the main **Settings** view, avoiding redundant navigation.
+- **📈 History Views**: Toggle between a daily calendar view and a **full list view** to track all your past sessions effortlessly, designed as a streamlined list for optimal space usage.
 - **🗑️ Data Control**: Easily **Clear History** with a single click in settings to reset your progress and streaks.
 - **📦 SwiftData Persistence**: High-performance session history using modern SwiftData architecture, with automatic migration from legacy `UserDefaults`.
 - **✨ Visual Feedback**: Premium **Confetti celebration** effect when completing goals or achieving focus milestones.
@@ -55,12 +55,57 @@ Blinky/
 ├── NotesView.swift           # Quick notes list and management
 ├── Localization.swift        # Full English & Spanish support
 ├── SyncIcon.swift            # Reusable robust rotation animation component
-├── DataPortalManager.swift   # JSON Export/Import engine for settings & history
 └── UIComponents.swift        # Reusable UI components
 
 BlinkyTests/
 └── SessionManagerTests.swift  # Unit tests for session logic
 ```
+
+## 💻 Local Development
+
+Follow these steps to set up, build, and run Blinky on your local machine for development:
+
+### 1. Prerequisites
+- **macOS 13.0** (Ventura) or later.
+- **Xcode 15.0** or later.
+
+### 2. Setup & Run
+1. **Clone the repository** (if you haven't already):
+   ```bash
+   git clone <repository-url>
+   cd blinky
+   ```
+
+#### Option A: Using Xcode (GUI)
+1. **Open the Project:**
+   ```bash
+   open Blinky.xcodeproj
+   ```
+2. **Select Scheme & Destination:**
+   Set the active scheme to `Blinky` and select your Mac (`My Mac`) as the run destination.
+3. **Build and Run:**
+   Press `Cmd + R` (or select *Product > Run*) to build and launch the app.
+
+#### Option B: Using Command Line (CLI)
+You can compile and launch the app directly from your terminal using `xcodebuild`:
+1. **Build the app:**
+   ```bash
+   xcodebuild -project Blinky.xcodeproj -scheme Blinky -configuration Debug -derivedDataPath build
+   ```
+2. **Launch the app:**
+   ```bash
+   open build/Build/Products/Debug/Blinky.app
+   ```
+
+> [!NOTE]
+> Since Blinky is a menu bar application, look for the Blinky icon (⚡️) in your macOS menu bar once launched.
+
+#### Permissions
+Blinky integrates with macOS Calendars via `EventKit`. On the first launch, macOS will prompt you for Calendar access. Grant the permission to enable meeting-aware focus states.
+
+### 3. Adding New Features
+- **Localization:** Ensure any user-facing text is added to [Localization.swift](Blinky/Localization.swift) to support both English and Spanish.
+- **SwiftData Persistence:** Persistent storage is handled via SwiftData. If you modify any schema, handle SwiftData models carefully to ensure clean migrations.
 
 ## 🧪 Testing
 
@@ -72,7 +117,12 @@ The app includes unit tests covering:
 - Time formatting and progress calculations
 - Day reset and streak logic
 
-Run tests with `Cmd+U` in Xcode.
+### How to Run Tests
+- **In Xcode:** Press `Cmd + U`.
+- **From Command Line:**
+  ```bash
+  xcodebuild test -project Blinky.xcodeproj -scheme Blinky -destination 'platform=macOS'
+  ```
 
 ## 📋 Requirements
 

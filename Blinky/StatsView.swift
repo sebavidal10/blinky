@@ -151,21 +151,7 @@ struct StatsView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 16)
             
-            // Summary Card
-            HStack(spacing: 16) {
-                SummaryStatView(label: Localization.at("Sessions", "Sesiones"), value: "\(dailyTotal)")
-                
-                Divider().frame(height: 24)
-                
-                SummaryStatView(label: Localization.at("Focus", "Enfoque"), value: "\(dailyFocusTime) min")
-            }
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity)
-            .background(Color.primary.opacity(0.03))
-            .cornerRadius(12)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 16)
-            
+
             // Session List
             ScrollView {
                 let filteredHistory = timer.sessionsHistory.filter { 
@@ -216,18 +202,7 @@ struct StatsView: View {
         return StatsView.dateDisplayFormatter.string(from: selectedDate).capitalized
     }
     
-    private var dailyTotal: Int {
-        timer.sessionsHistory.filter { 
-            Calendar.current.isDate($0.date, inSameDayAs: selectedDate) 
-        }.count
-    }
-    
-    private var dailyFocusTime: Int {
-        timer.sessionsHistory.filter { 
-            Calendar.current.isDate($0.date, inSameDayAs: selectedDate) 
-        }.reduce(0) { $0 + $1.durationInMinutes }
-    }
-    
+
     private var canMoveForward: Bool {
         !Calendar.current.isDateInToday(selectedDate) && selectedDate < Date()
     }
@@ -285,22 +260,6 @@ struct ViewModeButton: View {
             .cornerRadius(8)
         }
         .buttonStyle(.plain)
-    }
-}
-
-struct SummaryStatView: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        VStack(spacing: 2) {
-            Text(label)
-                .font(.system(size: 9, weight: .bold))
-                .foregroundColor(.secondary)
-            Text(value)
-                .font(.system(size: 14, weight: .black))
-                .foregroundColor(.primary)
-        }
     }
 }
 

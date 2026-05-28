@@ -118,50 +118,68 @@ struct NotesView: View {
 struct NoteRow: View {
     let note: QuickNote
     @ObservedObject var notesManager = NotesManager.shared
-    @State private var isHovering = false
+    @State private var copied = false
     let onDelete: () -> Void
     
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(note.text)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primary)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                HStack {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(note.text)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.primary)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
+            
+            HStack(spacing: 8) {
+                HStack(spacing: 4) {
                     Image(systemName: "clock")
                         .font(.system(size: 9))
                     Text(NoteRow.formatter.string(from: note.date))
                         .font(.system(size: 10))
                 }
                 .foregroundColor(.secondary.opacity(0.6))
-            }
-            
-            Spacer()
-            
-            if isHovering {
+                
+                Spacer()
+                
+                // Copy Button
+                Button(action: {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(note.text, forType: .string)
+                    withAnimation {
+                        copied = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        withAnimation {
+                            copied = false
+                        }
+                    }
+                }) {
+                    Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(copied ? .green : .secondary.opacity(0.8))
+                        .frame(width: 22, height: 22)
+                        .background(Color.primary.opacity(copied ? 0.08 : 0.04))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .help(Localization.at("Copy note text", "Copiar texto de la nota"))
+                
+                // Delete Button
                 Button(action: onDelete) {
                     Image(systemName: "trash")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.red.opacity(0.7))
-                        .frame(width: 24, height: 24)
-                        .background(Color.red.opacity(0.1))
+                        .frame(width: 22, height: 22)
+                        .background(Color.red.opacity(0.08))
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .transition(.opacity.combined(with: .scale))
+                .help(Localization.at("Delete note", "Eliminar nota"))
             }
         }
         .padding(12)
         .background(Color.primary.opacity(0.03))
         .cornerRadius(12)
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                isHovering = hovering
-            }
-        }
     }
     
     private static let formatter: DateFormatter = {

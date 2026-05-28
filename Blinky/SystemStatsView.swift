@@ -7,10 +7,26 @@ import SwiftUI
 
 struct SystemStatsView: View {
     @ObservedObject var monitor = SystemMonitor.shared
+    @State private var isRefreshing = false
     
     var body: some View {
         VStack(spacing: 0) {
-            ViewHeader(title: Localization.systemStats)
+            ViewHeader(title: Localization.systemStats) {
+                Button(action: {
+                    isRefreshing = true
+                    monitor.updateStats()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        isRefreshing = false
+                    }
+                }) {
+                    SyncIcon(isFetching: isRefreshing, color: .primary, size: 12)
+                        .frame(width: 24, height: 24)
+                        .background(Color.primary.opacity(0.06))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .disabled(isRefreshing)
+            }
             
             ScrollView {
                 VStack(spacing: 16) {

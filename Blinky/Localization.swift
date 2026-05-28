@@ -54,7 +54,7 @@ class Localization {
     static var appName: String { at("Blinky", "Blinky") }
     
     // MenuBar
-    static var today: String { at("Today", "Hoy") }
+    static var today: String { at("Go to Today", "Ir a hoy") }
     static var readyToWork: String { at("Ready to work", "Listo para trabajar") }
     static var activeFocus: String { at("Active Focus", "Enfoque activo") }
     static var breakTime: String { at("Break time", "Tiempo de descanso") }
@@ -192,7 +192,7 @@ class Localization {
     static var noNotes: String { at("No notes yet.\nJot down your thoughts!", "Aún no hay notas.\n¡Escribe tus pensamientos!") }
     static var typeSomething: String { at("Type something...", "Escribe algo...") }
     static var quickNoteShortcut: String { at("New Note", "Nueva Nota") }
-    static var nextEvent: String { at("Next Event", "Próximo") }
+    static var nextEvent: String { at("Next", "Próximo") }
     
     // Smart Reminders
     static var reminderTooManyMeetings: String { at("Many meetings today! Focus time? ⚡️", "¡Muchas reuniones! ¿Hora de enfocar? ⚡️") }
