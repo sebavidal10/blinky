@@ -76,6 +76,28 @@ struct SettingsView: View {
                             AppearanceToggle(title: Localization.insomniaMode, icon: buddySettings.isInsomniaEnabled ? "bolt.fill" : "bolt", isOn: $buddySettings.isInsomniaEnabled)
                             AppearanceToggle(title: Localization.showNextEvent, icon: buddySettings.showNextEventInMenuBar ? "calendar.badge.clock" : "calendar", isOn: $buddySettings.showNextEventInMenuBar)
                             
+                            if buddySettings.showNextEventInMenuBar {
+                                HStack {
+                                    Image(systemName: "text.alignleft")
+                                        .foregroundColor(.secondary)
+                                        .frame(width: 16)
+                                    Text(Localization.menuBarEventMode)
+                                        .font(.system(size: 11, weight: .medium))
+                                    
+                                    Spacer()
+                                    
+                                    Picker("", selection: $buddySettings.menuBarEventDisplayMode) {
+                                        ForEach(MenuBarEventDisplayMode.allCases) { mode in
+                                            Text(mode.displayName).tag(mode)
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
+                                    .labelsHidden()
+                                    .frame(width: 130)
+                                    .controlSize(.small)
+                                }
+                            }
+                            
                             Divider()
                                 .padding(.vertical, 4)
                             
@@ -98,6 +120,63 @@ struct SettingsView: View {
                                 .frame(width: 60)
                                 .controlSize(.small)
                             }
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
+
+                    // 3. Modules & Tabs (Sin iconos)
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(Localization.modulesAndTabs)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.secondary)
+                        
+                        VStack(spacing: 12) {
+                            Toggle(isOn: $buddySettings.isTimerModuleEnabled) {
+                                HStack {
+                                    Text(Localization.moduleTimer)
+                                        .font(.system(size: 11, weight: .medium))
+                                    Spacer()
+                                }
+                            }
+                            .toggleStyle(.switch)
+                            .tint(.green)
+                            .controlSize(.small)
+                            
+                            Toggle(isOn: $buddySettings.isStatsModuleEnabled) {
+                                HStack {
+                                    Text(Localization.moduleStats)
+                                        .font(.system(size: 11, weight: .medium))
+                                    Spacer()
+                                }
+                            }
+                            .toggleStyle(.switch)
+                            .tint(.green)
+                            .controlSize(.small)
+                            
+                            Toggle(isOn: $buddySettings.isNotesModuleEnabled) {
+                                HStack {
+                                    Text(Localization.moduleNotes)
+                                        .font(.system(size: 11, weight: .medium))
+                                    Spacer()
+                                }
+                            }
+                            .toggleStyle(.switch)
+                            .tint(.green)
+                            .controlSize(.small)
+                            
+                            Toggle(isOn: $buddySettings.isSystemModuleEnabled) {
+                                HStack {
+                                    Text(Localization.moduleSystem)
+                                        .font(.system(size: 11, weight: .medium))
+                                    Spacer()
+                                }
+                            }
+                            .toggleStyle(.switch)
+                            .tint(.green)
+                            .controlSize(.small)
                         }
                     }
                     .padding()

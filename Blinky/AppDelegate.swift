@@ -113,19 +113,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupTimerObserver() {
-        Publishers.CombineLatest4(
+        Publishers.CombineLatest(
             Publishers.CombineLatest4(
-                SessionManager.shared.$secondsRemaining.removeDuplicates(),
-                SessionManager.shared.$secondsElapsed.removeDuplicates(),
-                SessionManager.shared.$isRunning.removeDuplicates(),
-                SessionManager.shared.$phase.removeDuplicates()
+                Publishers.CombineLatest4(
+                    SessionManager.shared.$secondsRemaining.removeDuplicates(),
+                    SessionManager.shared.$secondsElapsed.removeDuplicates(),
+                    SessionManager.shared.$isRunning.removeDuplicates(),
+                    SessionManager.shared.$phase.removeDuplicates()
+                ),
+                SessionManager.shared.$meetingCountdown.removeDuplicates(),
+                SessionManager.shared.$upcomingMeeting.removeDuplicates(),
+                BuddySettings.shared.$showNextEventInMenuBar.removeDuplicates()
             ),
-            SessionManager.shared.$meetingCountdown.removeDuplicates(),
-            SessionManager.shared.$upcomingMeeting.removeDuplicates(),
-            BuddySettings.shared.$showNextEventInMenuBar.removeDuplicates()
+            BuddySettings.shared.$menuBarEventDisplayMode.removeDuplicates()
         )
         .receive(on: RunLoop.main)
-        .sink { [weak self] base, meetingCountdown, upcomingMeeting, showNextEventSelection in
+        .sink { [weak self] combined, _ in
+            let (base, meetingCountdown, upcomingMeeting, _) = combined
             let (_, _, isRunning, phase) = base
             self?.updateStatusItemTitle(isRunning: isRunning, 
                                       phase: phase, 
@@ -159,7 +163,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .baselineOffset: -0.5,
                 .foregroundColor: NSColor.systemOrange
             ]
-            button?.attributedTitle = NSAttributedString(string: countdown, attributes: attrsOrange)
+            let text: String
+            if BuddySettings.shared.menuBarEventDisplayMode == .timeOnly {
+                text = countdown
+            } else {
+                let rawTitle = upcomingMeeting?.title ?? ""
+                let limit = 15
+                let truncatedTitle = rawTitle.count > limit ? String(rawTitle.prefix(limit)) + "..." : rawTitle
+                text = truncatedTitle.isEmpty ? countdown : "\(countdown) \(truncatedTitle)"
+            }
+            button?.attributedTitle = NSAttributedString(string: text, attributes: attrsOrange)
         } else if phase != .idle {
             // Active session (Focus or Break)
             let title = SessionManager.shared.timeString
@@ -167,10 +180,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else if let next = upcomingMeeting, BuddySettings.shared.showNextEventInMenuBar {
             // Idle but with an upcoming meeting today/soon (If enabled in settings)
             let timeStr = AppDelegate.timeFormatter.string(from: next.startDate)
-            let rawTitle = next.title ?? ""
-            let limit = 20
-            let truncatedTitle = rawTitle.count > limit ? String(rawTitle.prefix(limit)) + "..." : rawTitle
-            let titleText = "\(Localization.nextEvent): \(timeStr) \(truncatedTitle)"
+            let titleText: String
+            if BuddySettings.shared.menuBarEventDisplayMode == .timeOnly {
+                titleText = timeStr
+            } else {
+                let rawTitle = next.title ?? ""
+                let limit = 20
+                let truncatedTitle = rawTitle.count > limit ? String(rawTitle.prefix(limit)) + "..." : rawTitle
+                titleText = "\(Localization.nextEvent): \(timeStr) \(truncatedTitle)"
+            }
             
             let attrsGray: [NSAttributedString.Key: Any] = [
                 .font: NSFont.systemFont(ofSize: 11, weight: .medium),

@@ -37,8 +37,8 @@ class Localization {
     static var unnamedSession: String { at("Unnamed Session", "Sesión sin nombre") }
     static var aboutTitle: String { at("About Blinky", "Acerca de Blinky") }
     static var aboutVersion: String { 
-        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.3"
-        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "11"
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.5"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "13"
         return at("Version \(v) (\(b))", "Versión \(v) (\(b))")
     }
     static var aboutCopyright: String { 
@@ -201,4 +201,27 @@ class Localization {
     }
     
     static var showNextEvent: String { at("Show Next Event in Menu Bar", "Mostrar próximo evento en barra") }
+    
+    // Modules / Tabs
+    static var modulesAndTabs: String { at("Modules & Tabs", "Módulos y Pestañas") }
+    static var moduleTimer: String { at("Timer", "Temporizador") }
+    static var moduleStats: String { at("Calendar & Stats", "Calendario y Estadísticas") }
+    static var moduleNotes: String { at("Quick Notes", "Notas Rápidas") }
+    static var moduleSystem: String { at("System Monitor", "Monitor del Sistema") }
+    
+    // Notes Blur / Lock
+    static var lockNote: String { at("Lock note", "Bloquear nota") }
+    static var unlockNote: String { at("Unlock note", "Desbloquear nota") }
+    static var lockAllNotes: String { at("Lock all notes", "Bloquear todas las notas") }
+    static var unlockAllNotes: String { at("Unlock all notes", "Desbloquear todas las notas") }
+    static var lockedNotePlaceholder: String { at("Protected note", "Nota protegida") }
+    static var tapToUnlock: String { at("Click to unlock", "Haz clic para desbloquear") }
+    static var authReasonNote: String { at("Authenticate to view protected note", "Autentícate para ver la nota protegida") }
+    static var authReasonAllNotes: String { at("Authenticate to unlock all notes", "Autentícate para desbloquear todas las notas") }
+    
+    // Menu Bar Display Mode
+    static var menuBarEventMode: String { at("Event Display in Bar", "Visualización de evento en barra") }
+    static var menuBarEventFull: String { at("Time & Title", "Texto y tiempo") }
+    static var menuBarEventTimeOnly: String { at("Time only", "Solo tiempo / cronómetro") }
 }
+

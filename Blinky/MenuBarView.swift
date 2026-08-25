@@ -55,20 +55,28 @@ struct MenuBarView: View {
 
             // Menu Footer
             HStack(spacing: 8) {
-                TabButton(icon: "timer", isSelected: currentView == .timer) {
-                    currentView = .timer
+                if buddySettings.isTimerModuleEnabled {
+                    TabButton(icon: "timer", isSelected: currentView == .timer) {
+                        currentView = .timer
+                    }
                 }
 
-                TabButton(icon: "calendar", isSelected: currentView == .stats) {
-                    currentView = .stats
+                if buddySettings.isStatsModuleEnabled {
+                    TabButton(icon: "calendar", isSelected: currentView == .stats) {
+                        currentView = .stats
+                    }
                 }
                 
-                TabButton(icon: "square.and.pencil", isSelected: currentView == .notes) {
-                    currentView = .notes
+                if buddySettings.isNotesModuleEnabled {
+                    TabButton(icon: "square.and.pencil", isSelected: currentView == .notes) {
+                        currentView = .notes
+                    }
                 }
 
-                TabButton(icon: "memorychip", isSelected: currentView == .system) {
-                    currentView = .system
+                if buddySettings.isSystemModuleEnabled {
+                    TabButton(icon: "memorychip", isSelected: currentView == .system) {
+                        currentView = .system
+                    }
                 }
 
                 TabButton(icon: "gearshape.fill", isSelected: currentView == .settings) {
@@ -100,7 +108,40 @@ struct MenuBarView: View {
             .padding(.vertical, 8)
             .background(VisualEffectView(material: .titlebar, blendingMode: .withinWindow))
         }
-        .frame(width: 320, height: 560) 
+        .frame(width: 320, height: 560)
+        .onAppear {
+            ensureValidCurrentView()
+        }
+        .onChange(of: buddySettings.isTimerModuleEnabled) { _ in ensureValidCurrentView() }
+        .onChange(of: buddySettings.isStatsModuleEnabled) { _ in ensureValidCurrentView() }
+        .onChange(of: buddySettings.isNotesModuleEnabled) { _ in ensureValidCurrentView() }
+        .onChange(of: buddySettings.isSystemModuleEnabled) { _ in ensureValidCurrentView() }
+    }
+
+    private func ensureValidCurrentView() {
+        if !isViewEnabled(currentView) {
+            if buddySettings.isTimerModuleEnabled {
+                currentView = .timer
+            } else if buddySettings.isStatsModuleEnabled {
+                currentView = .stats
+            } else if buddySettings.isNotesModuleEnabled {
+                currentView = .notes
+            } else if buddySettings.isSystemModuleEnabled {
+                currentView = .system
+            } else {
+                currentView = .settings
+            }
+        }
+    }
+
+    private func isViewEnabled(_ view: AppView) -> Bool {
+        switch view {
+        case .timer: return buddySettings.isTimerModuleEnabled
+        case .stats: return buddySettings.isStatsModuleEnabled
+        case .notes: return buddySettings.isNotesModuleEnabled
+        case .system: return buddySettings.isSystemModuleEnabled
+        case .settings: return true
+        }
     }
 
     // MARK: - Subviews

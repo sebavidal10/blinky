@@ -4,6 +4,9 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 
 ## 🚀 Key Features
 
+- **🧩 Customizable Modules & Tabs**: Easily enable or disable individual modules (Timer, Calendar & Stats, Quick Notes, System Monitor) from Settings with a clean, clutter-free switch design.
+- **🔒 Protected Quick Notes with Biometrics**: Safeguard sensitive notes and passwords with an elegant blur effect. Unlock individual notes or all at once using **Touch ID**, **Apple Watch**, or your macOS device password via `LocalAuthentication`, with persistent lock settings.
+- **⏱️ Menu Bar Event Customization**: Choose how upcoming meetings appear in your menu bar: full display (*Time & Title*) or minimalist (*Time only / Countdown*).
 - **🤖 Interactive Robot Buddy**: Blinky has multiple mood states (Idle, Focusing, Celebrating). **Imminent meetings** (selector for 5, 10, 15 mins) are displayed on his eyes with an orange countdown. **Contextual icons** (video, calendar, bolt) appear on his face to show the current activity type.
 - **✨ Refined Header**: The robot buddy and session status are now integrated into the main header, providing a cleaner and more compact interface.
 - **⏱️ Infinite Work Sessions**: Open-ended stopwatch sessions with no time limit.
@@ -11,7 +14,7 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 - **📁 Grouped Meetings**: Clear visual separation for Today/Tomorrow with **engaging empty states**.
 - **📍 Activity Indicators**: Custom-built historical calendar with **dot indicators** for days with focus sessions or notes.
 - **💎 Premium UI Consistency**: Normalized headers across all sections for a more professional and seamless experience.
-- **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, Buddy Config, and Calendars. Browser and Calendar selection are now integrated into the main **Settings** view, avoiding redundant navigation.
+- **⚙️ Segmented Settings**: Reimagined multi-card configuration with dedicated sections for General, Buddy Config, Modules, and Calendars. Browser and Calendar selection are integrated into the main **Settings** view.
 - **📈 History Views**: Toggle between a daily calendar view and a **full list view** to track all your past sessions effortlessly, designed as a streamlined list for optimal space usage.
 - **🗑️ Data Control**: Easily **Clear History** with a single click in settings to reset your progress and streaks.
 - **📦 SwiftData Persistence**: High-performance session history using modern SwiftData architecture, with automatic migration from legacy `UserDefaults`.
@@ -31,6 +34,7 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 
 - **Swift & SwiftUI**: Core app logic and modern user interface.
 - **AppKit**: Status bar integration (`NSStatusItem`) and floating companion window.
+- **LocalAuthentication**: Native biometric security (Touch ID / macOS password) for protected notes.
 - **EventKit**: macOS Calendar integration for meeting-aware sessions with debounced fetching.
 - **Combine**: Reactive state management and optimized event observation.
 - **IOKit (pwr_mgt)**: Power management assertions for the Insomnia Mode.
@@ -42,6 +46,7 @@ A premium session tracker for macOS with a desktop companion. Blinky lives in yo
 Blinky/
 ├── BlinkyApp.swift            # App entry point
 ├── AppDelegate.swift          # App lifecycle, menu bar & popover management
+├── BiometricAuthManager.swift # Touch ID / macOS password authentication
 ├── SessionManager.swift      # Core session engine, stats, timer logic & persistence
 ├── NotesManager.swift        # Quick notes engine and persistence
 ├── CalendarManager.swift     # macOS Calendar integration with debounced fetching
@@ -49,10 +54,10 @@ Blinky/
 ├── InsomniaManager.swift      # Power management for sleep prevention
 ├── BuddyView.swift           # Blinky's UI, animations, smart reminders & moods
 ├── MenuBarView.swift         # Main popover interface and notes integration
-├── SettingsView.swift        # Unified configuration (General, Browser, Calendars)
+├── SettingsView.swift        # Unified configuration (General, Browser, Modules, Calendars)
 ├── StatsView.swift           # Historial (session history and date navigation)
 ├── CalendarDotsView.swift    # Custom historical calendar with activity dots
-├── NotesView.swift           # Quick notes list and management
+├── NotesView.swift           # Quick notes list, biometric protection and management
 ├── Localization.swift        # Full English & Spanish support
 ├── SyncIcon.swift            # Reusable robust rotation animation component
 └── UIComponents.swift        # Reusable UI components

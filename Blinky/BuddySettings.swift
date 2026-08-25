@@ -39,6 +39,26 @@ class BuddySettings: ObservableObject {
         didSet { UserDefaults.standard.set(showNextEventInMenuBar, forKey: "showNextEventInMenuBar") }
     }
 
+    @Published var menuBarEventDisplayMode: MenuBarEventDisplayMode = .full {
+        didSet { UserDefaults.standard.set(menuBarEventDisplayMode.rawValue, forKey: "menuBarEventDisplayMode") }
+    }
+
+    @Published var isTimerModuleEnabled: Bool = true {
+        didSet { UserDefaults.standard.set(isTimerModuleEnabled, forKey: "isTimerModuleEnabled") }
+    }
+
+    @Published var isStatsModuleEnabled: Bool = true {
+        didSet { UserDefaults.standard.set(isStatsModuleEnabled, forKey: "isStatsModuleEnabled") }
+    }
+
+    @Published var isNotesModuleEnabled: Bool = true {
+        didSet { UserDefaults.standard.set(isNotesModuleEnabled, forKey: "isNotesModuleEnabled") }
+    }
+
+    @Published var isSystemModuleEnabled: Bool = true {
+        didSet { UserDefaults.standard.set(isSystemModuleEnabled, forKey: "isSystemModuleEnabled") }
+    }
+
 
     @Published var isInsomniaEnabled: Bool = false {
         didSet {
@@ -88,6 +108,18 @@ class BuddySettings: ObservableObject {
         
         showNextEventInMenuBar = UserDefaults.standard.object(forKey: "showNextEventInMenuBar") as? Bool ?? true
         
+        if let modeStr = UserDefaults.standard.string(forKey: "menuBarEventDisplayMode"),
+           let mode = MenuBarEventDisplayMode(rawValue: modeStr) {
+            menuBarEventDisplayMode = mode
+        } else {
+            menuBarEventDisplayMode = .full
+        }
+
+        isTimerModuleEnabled = UserDefaults.standard.object(forKey: "isTimerModuleEnabled") as? Bool ?? true
+        isStatsModuleEnabled = UserDefaults.standard.object(forKey: "isStatsModuleEnabled") as? Bool ?? true
+        isNotesModuleEnabled = UserDefaults.standard.object(forKey: "isNotesModuleEnabled") as? Bool ?? true
+        isSystemModuleEnabled = UserDefaults.standard.object(forKey: "isSystemModuleEnabled") as? Bool ?? true
+        
         // Sync launchAtLogin with system status
         launchAtLogin = SMAppService.mainApp.status == .enabled
         
@@ -116,6 +148,31 @@ class BuddySettings: ObservableObject {
         
         showNextEventInMenuBar = UserDefaults.standard.object(forKey: "showNextEventInMenuBar") as? Bool ?? true
         
+        if let modeStr = UserDefaults.standard.string(forKey: "menuBarEventDisplayMode"),
+           let mode = MenuBarEventDisplayMode(rawValue: modeStr) {
+            menuBarEventDisplayMode = mode
+        }
+        
+        isTimerModuleEnabled = UserDefaults.standard.object(forKey: "isTimerModuleEnabled") as? Bool ?? true
+        isStatsModuleEnabled = UserDefaults.standard.object(forKey: "isStatsModuleEnabled") as? Bool ?? true
+        isNotesModuleEnabled = UserDefaults.standard.object(forKey: "isNotesModuleEnabled") as? Bool ?? true
+        isSystemModuleEnabled = UserDefaults.standard.object(forKey: "isSystemModuleEnabled") as? Bool ?? true
+        
         InsomniaManager.shared.updateState(enabled: isInsomniaEnabled)
     }
 }
+
+enum MenuBarEventDisplayMode: String, CaseIterable, Identifiable {
+    case full = "full"
+    case timeOnly = "timeOnly"
+    
+    var id: String { rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .full: return Localization.menuBarEventFull
+        case .timeOnly: return Localization.menuBarEventTimeOnly
+        }
+    }
+}
+
