@@ -77,7 +77,7 @@ Follow these steps to set up, build, and run Blinky on your local machine for de
 ### 2. Setup & Run
 1. **Clone the repository** (if you haven't already):
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/sebavidal10/blinky.git
    cd blinky
    ```
 
